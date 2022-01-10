@@ -5,7 +5,7 @@ import argparse
 import numpy as np
 
 p = argparse.ArgumentParser()
-default_demo = 'experiments/2021-12-13-13:29:34_demos4M/stickyness0.0_maxsteps100_seed3533_.json'
+default_demo = 'demo.json'
 p.add_argument('--path', type=str, default=default_demo)
 args = p.parse_args()
 
