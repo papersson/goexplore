@@ -1,17 +1,79 @@
 body {
     font-family: serif;
 }
-.main {
-    width: 400px;
-    background-color: #789789;
-    padding: 20px;
+
+.content {
+    width: 1400px;
     margin: 0 auto;
+    display: flex;
+}
+
+.main {
+    /*width: 400px;*/
+    background-color: #ababab;
+    padding: 20px;
+    margin-right: 20px;
+    flex: 0 0 65%;
+}
+
+.archiveArea {
+    flex: 1;
+    border: 1px solid red;
+}
+
+table {
+    border: 1px solid #333;
+    text-align: center;
+    border-collapse: collapse;
+}
+
+td {
+    border: none;
+}
+
+#archive {
+    overflow-y: scroll;
+    height: 914px;
+    width: 300px;
+    display: block;
+    margin: 0 auto;
+}
+
+.cell {
+    width: 32px;
+    height: 32px;
+}
+
+.cell:hover {
+    width: 128px;
+    height: 128px;
+}
+
+.bigCell {
+    width: 320px;
+    height: 320px;
+    margin: 0 auto;
+}
+
+.whitePixel {
+    background-color: white;
+    font-size: 0;
+}
+
+.blackPixel {
+    background-color: black;
+    font-size: 0;
 }
 
 #canvas {
     border: 1px solid black;
     margin-top: 20px;
-    margin-left: 40px;
+    margin-left: 295px; /*wtf*/
+}
+
+#cellCanvas {
+    border: 1px solid blue;
+    margin-top: 20px;
 }
 
 .sliderArea {
@@ -37,6 +99,7 @@ body {
 
 #btn {
     margin-right: 20px;
+    width: 60px;
 }
 
 .inputArea {

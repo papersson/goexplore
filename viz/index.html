@@ -5,40 +5,57 @@
         <meta charset="utf-8" />
         <title>GoExplore</title>
         <script src="slideshow.js"></script>
+        <script src="https://www.kryogenix.org/code/browser/sorttable/sorttable.js"></script>
     </head>
 
     <body>
-        <div class="main">
-            <div class="sliderArea">
-                <label for="speed" class="speedLabel">Speed</label>
-                <input
-                    type="range"
-                    id="slider"
-                    name="speed"
-                    min="0"
-                    max="1"
-                    step="0.01"
-                    value="0.5"
-                />
-            </div>
-            <canvas id="canvas" width="320" height="420"
-                >Canvas not supported.</canvas
-            >
-            <div class="control">
-                <button id="btn" class="off" onclick="toggle(this)">
-                    Pause
-                </button>
-
-                <div class="inputArea">
-                    <label for="input" class="frameLabel">Set frame: </label>
+        <div class="content">
+            <div class="main">
+                <div class="sliderArea">
+                    <label for="speed" class="speedLabel">Speed</label>
                     <input
-                        id="frameInput"
-                        type="number"
-                        name="frame"
+                        type="range"
+                        id="slider"
+                        name="speed"
                         min="0"
-                        max="4000000"
+                        max="1"
+                        step="0.01"
+                        value="0.5"
                     />
                 </div>
+                <canvas id="canvas" width="320" height="420"
+                    >Canvas not supported.</canvas
+                >
+                <div class="control">
+                    <button id="btn" class="off" onclick="toggle(this)">
+                        Play
+                    </button>
+
+                    <div class="inputArea">
+                        <label for="input" class="frameLabel"
+                            >Set frame:
+                        </label>
+                        <input
+                            id="frameInput"
+                            type="number"
+                            name="frame"
+                            min="0"
+                            max="4000000"
+                        />
+                    </div>
+                </div>
+                <div id="cellCanvas" width="320" height="420"></div>
+            </div>
+            <div class="archiveArea">
+                <table id="archive" class="sortable">
+                    <thead>
+                        <tr>
+                            <th>Cell</th>
+                            <th>Score</th>
+                            <th>Visits</th>
+                        </tr>
+                    </thead>
+                </table>
             </div>
         </div>
     </body>
