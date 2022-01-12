@@ -4,6 +4,9 @@ import numpy as np
 class ReverseCountSelector:
     def sample(self, archive):
         visits = [cell.visits for cell in archive.values()]
+        # Example
+        # [1, 4, 5, 4] ->
+        # [5, 2, 1, 2]
         weights = [max(visits) + 1 - v for v in visits]
         probs = [w / sum(weights) for w in weights]
         return np.random.choice(list(archive.values()), 1, p=probs)[0]

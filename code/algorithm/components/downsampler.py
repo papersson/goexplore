@@ -37,6 +37,8 @@ class UberReducer:
         # Reduce pixel depth
         img = self._color_quantize(img)
 
+        return tuple(img.flatten())
+
     def _color_quantize(self, img):
         bits = np.log2(self.num_colors)
         diff = 8 - bits  # Assumes 2^8 = 256 original depth
