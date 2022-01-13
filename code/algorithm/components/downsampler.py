@@ -29,6 +29,8 @@ class UberReducer:
         self.num_colors = num_colors
 
     def process(self, img):
+        # Widen by duplicating every other pixel colwise
+        img = cv2.resize(img, (320, 210), interpolation=cv2.INTER_AREA)
         # Convert to grayscale
         img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
         # Shrink

@@ -8,7 +8,7 @@ from algorithm.components.agent import ActionRepetitionAgent
 from algorithm.goexplore import GoExplore
 
 
-def run_experiments(experiment_name, seeds):
+def run_experiments(experiment_name, game, seeds, frames):
     # Create folder with format {date_experimentname}
     date = datetime.datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
     path = Path(f'experiments/{date}_{experiment_name}')
@@ -25,15 +25,18 @@ def run_experiments(experiment_name, seeds):
                   agent.__class__.__name__]
         logger = Logger(folder=str(path), params=params)
         GoExplore(agent, downsampler, selector, seed=seed,
-                  max_frames=2000, game='Pong', logger=logger).run()
+                  max_frames=frames, game=game, verbose=True, logger=logger).run()
 
 
 parser = argparse.ArgumentParser(description='test')
 
 parser.add_argument('--exp_name', type=str, default='',
                     help='Required experiment name')
+parser.add_argument('--game', type=str, default='Pong')
 parser.add_argument('--seeds', type=int, nargs='+',
                     default=[0], help='Experiment seed')
+parser.add_argument('--frames', type=int, default=100000,
+                    help='Training frames')
 # parser.add_argument('--sticky', type=float, nargs='+',
 #                     default=[0.0], help='Action stickyness parameter')
 # parser.add_argument('--max_steps', type=int, nargs='+',
@@ -44,4 +47,4 @@ parser.add_argument('--seeds', type=int, nargs='+',
 args = parser.parse_args()
 
 if __name__ == '__main__':
-    run_experiments(args.exp_name, args.seeds)
+    run_experiments(args.exp_name, args.game, args.seeds, args.frames)

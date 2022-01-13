@@ -46,8 +46,8 @@ class GoExplore:
 
         highscore, n_frames = 0, 0
         scores, n_cells = [], []
-        # while (n_frames < self.max_frames):
-        for _ in tqdm(range(int(self.max_frames / 100))):
+        while (n_frames < self.max_frames):
+            # for _ in tqdm(range(int(self.max_frames / 100))):
             # Sample cell from archive
             cell = self.archive_selector.sample(archive)
             highscore, n_frames = self._explore(
