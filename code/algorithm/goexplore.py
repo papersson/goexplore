@@ -56,9 +56,6 @@ class GoExplore:
             # Track for logging
             scores.append(highscore)
             n_cells.append(len(archive))
-            if self.verbose and n_frames % 10000 == 0:
-                print(
-                    f'Frames: {n_frames}\tScore: {highscore}\t Cells: {len(archive)}')
 
         # Extract cell that reached terminal state with highest score and smallest trajectory
         cells = list(archive.values())
@@ -111,6 +108,9 @@ class GoExplore:
             if is_terminal:
                 cell.set_done()
                 break
+            if self.verbose and n_frames % 10000 == 0:
+                print(
+                    f'Frames: {n_frames}\tScore: {highscore}\t Cells: {len(archive)}')
 
         return highscore, n_frames
 

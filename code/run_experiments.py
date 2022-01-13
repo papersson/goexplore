@@ -14,8 +14,10 @@ def run_experiments(experiment_name, game, seeds, frames):
     path = Path(f'experiments/{date}_{experiment_name}')
     path.mkdir(exist_ok=True)
 
-    downsampler = UberReducer(11, 10, 8)
-    selector = UberSelector()
+    # downsampler = UberReducer(11, 10, 8)
+    downsampler = CoarseBinarizer()
+    # selector = UberSelector()
+    selector = ReverseCountSelector()
     agent = ActionRepetitionAgent()
 
     for seed in seeds:
