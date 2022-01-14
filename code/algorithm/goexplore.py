@@ -12,19 +12,20 @@ sys.path.append('..')
 
 class GoExplore:
     def __init__(self, agent, downsampler, archive_selector,
-                 max_frames=4000000, game='Pong', seed=3533, verbose=True, logger=Logger(3533)):
+                 max_frames=4000000, env=env, seed=3533, verbose=True, logger=Logger(3533)):
         # Set game and seed
         self.agent = agent
         self.downsampler = downsampler
         self.archive_selector = archive_selector
         self.max_frames = max_frames
-        self.game = game
+        # self.game = game
+        self.env = env
         self.seed = seed
         self.verbose = verbose
         self.logger = logger
         np.random.seed(self.seed)
         random.seed(self.seed)
-        self.env = gym.make(f'{game}Deterministic-v4')
+        # self.env = gym.make(f'{game}Deterministic-v4')
         self.env.seed(self.seed)
         self.env.action_space.seed(self.seed)
 

@@ -6,6 +6,7 @@ from algorithm.components.downsampler import CoarseBinarizer, UberReducer
 from algorithm.components.archive_selector import ReverseCountSelector, UberSelector
 from algorithm.components.agent import ActionRepetitionAgent
 from algorithm.goexplore import GoExplore
+import gym
 
 
 def run_experiments(experiment_name, game, seeds, frames):
@@ -14,11 +15,12 @@ def run_experiments(experiment_name, game, seeds, frames):
     path = Path(f'experiments/{date}_{experiment_name}')
     path.mkdir(exist_ok=True)
 
-    # downsampler = UberReducer(11, 10, 8)
-    downsampler = CoarseBinarizer()
+    downsampler = UberReducer(11, 8, 8)
+    # downsampler = CoarseBinarizer()
     # selector = UberSelector()
     selector = ReverseCountSelector()
-    agent = ActionRepetitionAgent()
+    env = gym.make(f'{game}Deterministic-v4')
+    agent = ActionRepetitionAgent(env.action_space)
 
     for seed in seeds:
         params = [seed,
@@ -27,7 +29,7 @@ def run_experiments(experiment_name, game, seeds, frames):
                   agent.__class__.__name__]
         logger = Logger(folder=str(path), params=params)
         GoExplore(agent, downsampler, selector, seed=seed,
-                  max_frames=frames, game=game, verbose=True, logger=logger).run()
+                  max_frames=frames, env=env, verbose=True, logger=logger).run()
 
 
 parser = argparse.ArgumentParser(description='test')
