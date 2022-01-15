@@ -16,8 +16,8 @@ class Logger:
         filename += f'_Seed{self.params[0]}'
         if self.folder:
             filename = f'{self.folder}/{filename}.json'
-        else:
-            filename = f'experiments/{date}_seed{self.seed}_{experiment_name}.json'
+        # else:
+        #     filename = f'experiments/{date}_seed{self.seed}_{experiment_name}.json'
 
         with open(filename, 'w', encoding='utf-8') as f:
             json.dump(self.logs, f, indent=4)
