@@ -13,8 +13,16 @@ class ReverseCountSelector:
 
 
 class UberSelector:
-    def sample(self, archive):
-        visits = [cell.visits for cell in archive.values()]
-        weights = [1 / np.log(c.visits + 1) for c in archive.values()]
-        probs = [w / sum(weights) for w in weights]
-        return np.random.choice(list(archive.values()), 1, p=probs)[0]
+    # def sample(self, archive):
+    #     visits = [cell.visits for cell in archive.values()]
+    #     weights = [1 / np.log(c.visits + 1) for c in archive.values()]
+    #     probs = [w / sum(weights) for w in weights]
+    #     return np.random.choice(list(archive.values()), 1, p=probs)[0]
+
+    def sample(self, cells):
+        # visits = [cell.visits for cell in archive.values()]
+        # weights = [1 / np.log(c.visits + 1) for c in archive.values()]
+        weights = np.array([c.get_weight() for c in cells])
+        probs = weights / sum(weights)
+        # probs = [w / sum(weights) for w in weights]
+        return np.random.choice(cells, 1, p=probs)[0]

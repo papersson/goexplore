@@ -15,10 +15,10 @@ def run_experiments(experiment_name, games, seeds, frames):
     path = Path(f'experiments/{date}_{experiment_name}')
     path.mkdir(exist_ok=True)
 
-    downsampler = UberReducer(11, 8, 8)
+    downsampler = UberReducer(11, 8, 16)
     # downsampler = CoarseBinarizer()
-    # selector = UberSelector()
-    selector = ReverseCountSelector()
+    selector = UberSelector()
+    # selector = ReverseCountSelector()
 
     for game in games:
         env = gym.make(f'{game}Deterministic-v4')

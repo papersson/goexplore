@@ -50,7 +50,7 @@ class GoExplore:
         while (n_frames < self.max_frames):
             # for _ in tqdm(range(int(self.max_frames / 100))):
             # Sample cell from archive
-            cell = self.archive_selector.sample(archive)
+            cell = self.archive_selector.sample(list(archive.values()))
             highscore, n_frames = self._explore(
                 cell, archive, highscore, n_frames)
 
@@ -109,7 +109,7 @@ class GoExplore:
             if is_terminal:
                 cell.set_done()
                 break
-            if self.verbose and n_frames % 10000 == 0:
+            if self.verbose and n_frames % 100000 == 0:
                 print(
                     f'Frames: {n_frames}\tScore: {highscore}\t Cells: {len(archive)}')
 
@@ -142,6 +142,9 @@ class Cell:
 
     def increment_visits(self):
         self.visits += 1
+
+    def get_weight(self):
+        return 1 / np.log(self.visits + 1)
 
     def restore_state(self, env):
         env.unwrapped.restore_state(self.simulator_state)
