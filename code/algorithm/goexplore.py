@@ -12,7 +12,7 @@ sys.path.append('..')
 
 class GoExplore:
     def __init__(self, agent, downsampler, archive_selector,
-                 max_frames=4000000, env=env, seed=3533, verbose=True, logger=Logger(3533)):
+                 env, max_frames=4000000, seed=3533, verbose=True, logger=Logger(3533)):
         # Set game and seed
         self.agent = agent
         self.downsampler = downsampler
@@ -66,9 +66,9 @@ class GoExplore:
 
         # Save logs
         duration = (time.time() - start)
-        names = ['highscore', 'duration', 'n_frames',
+        names = ['env', 'highscore', 'duration', 'n_frames',
                  'action_history', 'scores', 'n_cells']
-        values = [highscore, str(timedelta(seconds=duration)),
+        values = [self.env.unwrapped.spec.id, highscore, str(timedelta(seconds=duration)),
                   n_frames, best_cell.action_history, scores, n_cells]
         self.logger.add(names, values)
         self.logger.save()

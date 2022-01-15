@@ -7,7 +7,7 @@ import numpy as np
 p = argparse.ArgumentParser()
 default_demo = 'demo.json'
 p.add_argument('--path', type=str, default=default_demo)
-p.add_argument('--game', type=str, default=default_demo)
+# p.add_argument('--game', type=str, default=default_demo)
 args = p.parse_args()
 
 
@@ -26,10 +26,10 @@ def replay(actions_taken, env):
     env.close()
 
 
-def read_actions(json_file):
+def read(json_file):
     with open(json_file) as f:
         d = json.load(f)
-        return d['action_history']
+        return d['env'], d['action_history']
 
 
 def repeat_upsample(rgb_array, k=1, l=1, err=[]):
@@ -42,6 +42,6 @@ def repeat_upsample(rgb_array, k=1, l=1, err=[]):
 
 viewer = rendering.SimpleImageViewer()
 
-env = gym.make(f'{args.game}Deterministic-v4')
-actions = read_actions(args.path)
+env_name, actions = read(args.path)
+env = gym.make(env_name)
 replay(actions, env)
