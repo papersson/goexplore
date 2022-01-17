@@ -44,15 +44,21 @@ class GoExplore:
         archive = {}
         cell_representation = self.downsampler.process(state)
         archive[cell_representation] = cell
+        self.archive_selector.update(list(archive.values()))
 
-        highscore, n_frames = 0, 0
-        scores, n_cells = [], []
+        highscore, n_frames, n_episodes = 0, 0, 0
+        scores, n_cells, updates, discoveries = [], [], [], []
         while (n_frames < self.max_frames):
             # for _ in tqdm(range(int(self.max_frames / 100))):
             # Sample cell from archive
-            cell = self.archive_selector.sample(list(archive.values()))
+            cell = self.archive_selector.sample()
             highscore, n_frames = self._explore(
-                cell, archive, highscore, n_frames)
+                cell, archive, highscore, n_frames, updates, discoveries)
+
+            # Update selection probabilities periodically
+            n_episodes += 1
+            if n_episodes % 100:
+                self.archive_selector.update(list(archive.values()))
 
             # Track for logging
             scores.append(highscore)
@@ -66,14 +72,14 @@ class GoExplore:
 
         # Save logs
         duration = (time.time() - start)
-        names = ['env', 'highscore', 'duration', 'n_frames',
-                 'action_history', 'scores', 'n_cells']
-        values = [self.env.unwrapped.spec.id, highscore, str(timedelta(seconds=duration)),
-                  n_frames, best_cell.action_history, scores, n_cells]
+        names = ['env', 'highscore', 'duration', 'episodes', 'n_frames',
+                 'action_history', 'scores', 'n_cells', 'discoveries', 'updates']
+        values = [self.env.unwrapped.spec.id, highscore, str(timedelta(seconds=duration)), n_episodes,
+                  n_frames, best_cell.action_history, scores, n_cells, discoveries, updates]
         self.logger.add(names, values)
         self.logger.save()
 
-    def _explore(self, cell, archive, highscore, n_frames):
+    def _explore(self, cell, archive, highscore, n_frames, updates, discoveries):
         self.env.reset()
         cell.restore_state(self.env)
         action_history, score = cell.history()
@@ -83,6 +89,7 @@ class GoExplore:
         seen_cells_during_episode = set()
 
         MAX_STEPS = 100
+        n_updates, n_discoveries = 0, 0
         while (n_steps < MAX_STEPS and not is_terminal):
             # TODO: n_steps and sticky action configurable?
             # Interact
@@ -97,7 +104,7 @@ class GoExplore:
             # Update or add cell to archive
             cell_representation = self.downsampler.process(state)
             cell = self._update_or_create_cell(
-                archive, cell_representation, score, deepcopy(action_history))
+                archive, cell_representation, score, deepcopy(action_history), n_updates, n_discoveries)
 
             # Increment visit count if cell not seen during the episode
             if cell_representation not in seen_cells_during_episode:
@@ -112,20 +119,24 @@ class GoExplore:
             if self.verbose and n_frames % 100000 == 0:
                 print(
                     f'Frames: {n_frames}\tScore: {highscore}\t Cells: {len(archive)}')
+        updates.append(n_updates)
+        discoveries.append(n_discoveries)
 
         return highscore, n_frames
 
-    def _update_or_create_cell(self, archive, cell_representation, score, action_history):
+    def _update_or_create_cell(self, archive, cell_representation, score, action_history, n_updates, n_discoveries):
         if cell_representation in archive:
             cell = archive[cell_representation]
             if cell.is_worse(score, len(action_history)):
                 simulator_state = self.env.unwrapped.clone_state(
                     include_rng=True)
                 cell.update(simulator_state, action_history, score)
+                n_updates += 1
         else:
             simulator_state = self.env.unwrapped.clone_state(include_rng=True)
             cell = Cell(simulator_state, action_history, score)
             archive[cell_representation] = cell
+            n_discoveries += 1
         return cell
 
 

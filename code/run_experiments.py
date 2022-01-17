@@ -4,7 +4,7 @@ from pathlib import Path
 from utils.logger import Logger
 from algorithm.components.downsampler import CoarseBinarizer, UberReducer
 from algorithm.components.archive_selector import ReverseCountSelector, UberSelector
-from algorithm.components.agent import ActionRepetitionAgent
+from algorithm.components.agent import ActionRepetitionAgent, RandomAgent
 from algorithm.goexplore import GoExplore
 import gym
 
@@ -22,7 +22,7 @@ def run_experiments(experiment_name, games, seeds, frames):
 
     for game in games:
         env = gym.make(f'{game}Deterministic-v4')
-        agent = ActionRepetitionAgent(env.action_space)
+        agent = RandomAgent(env.action_space)
         for seed in seeds:
             params = [seed, game,
                       downsampler.__class__.__name__,
