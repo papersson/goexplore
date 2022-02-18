@@ -12,6 +12,23 @@ class ReverseCountSelector:
         return np.random.choice(list(archive.values()), 1, p=probs)[0]
 
 
+class RouletteWheel:
+    def initialize(self, cell):
+        self.cells = [cell]
+        self.weights = [1 / np.sqrt(2)]
+
+    def update_weight(self, index):
+        self.weights[index] = 1 / np.sqrt((1 / self.weights[index]) ** 2 + 1)
+
+    def add_cell(self, cell):
+        self.cells.append(cell)
+        self.weights.append(1 / np.sqrt(2))
+
+    def sample(self):
+        probs = [w / sum(self.weights) for w in self.weights]
+        return np.random.choice(self.cells, 1, p=probs)[0]
+
+
 class StochasticAcceptance:
     # def sample(self, archive):
     #     visits = [cell.visits for cell in archive.values()]
@@ -46,12 +63,6 @@ class StochasticAcceptance:
         p = self.weights[i] / self.w_max
         threshold = 1 - np.random.rand()
         if p > threshold:
-            # print('p:', p)
-            # print('Acceptance:', threshold)
-            # print('Index:', i)
-            # print('Cells length:', len(self.cells))
-            # print('Weights length:', len(self.weights))
-            # print('Cell', self.cells[i])
             return self.cells[i]
         else:
             return self.sample()

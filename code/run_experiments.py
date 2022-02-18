@@ -3,7 +3,7 @@ import datetime
 from pathlib import Path
 from utils.logger import Logger
 from algorithm.components.downsampler import CoarseBinarizer, UberReducer
-from algorithm.components.archive_selector import ReverseCountSelector, StochasticAcceptance
+from algorithm.components.archive_selector import ReverseCountSelector, RouletteWheel, StochasticAcceptance
 from algorithm.components.agent import ActionRepetitionAgent, RandomAgent
 from algorithm.goexplore import GoExplore
 import gym
@@ -17,7 +17,7 @@ def run_experiments(experiment_name, games, seeds, frames_grid):
 
     downsampler = UberReducer(11, 8, 16)
     # downsampler = CoarseBinarizer()
-    selector = StochasticAcceptance()
+    selector = RouletteWheel()
     # selector = ReverseCountSelector()
 
     for frames in frames_grid:
@@ -25,9 +25,7 @@ def run_experiments(experiment_name, games, seeds, frames_grid):
             env = gym.make(f'{game}Deterministic-v4')
             agent = RandomAgent(env.action_space)
             for seed in seeds:
-                params = [seed, game,
-                          frames
-                          agent.__class__.__name__]
+                params = [seed, game, str(frames)]
                 logger = Logger(folder=str(path), params=params)
                 GoExplore(agent, downsampler, selector, seed=seed,
                           max_frames=frames, env=env, verbose=True, logger=logger).run()
