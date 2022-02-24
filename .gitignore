@@ -4,3 +4,4 @@ atari/
 viz/
 experiments/
 notebooks/
+*.sh

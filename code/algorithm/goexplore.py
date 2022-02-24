@@ -49,7 +49,7 @@ class GoExplore:
         self.cell_selector.add(cell)
 
         # self.highscore, self.n_frames, self.n_episodes = 0, 0, 0
-        scores, n_cells, updates, discoveries = [], [], [], []
+        scores, n_cells, iter_durations = [], [], []
         while (self.n_frames < self.max_frames):
             iter_start = time.time()
             # Sample cell from archive
@@ -59,9 +59,10 @@ class GoExplore:
             self.n_episodes += 1
 
             # Track for logging
+            iter_end = time.time()
             scores.append(self.highscore)
             n_cells.append(len(self.archive))
-            iter_end = time.time()
+            iter_durations.append(round(iter_end - iter_start, 3))
             print(
                 f'Processed frames: {self.n_frames}/{self.max_frames} Iteration time: {round(iter_end - iter_start, 3)}s', end='\r')
 
@@ -75,9 +76,9 @@ class GoExplore:
         # Save logs
         duration = (time.time() - start)
         names = ['env', 'highscore', 'duration', 'episodes', 'n_frames',
-                 'trajectory', 'scores', 'n_cells', 'discoveries', 'updates']
+                 'trajectory', 'scores', 'n_cells', 'iter_durations']
         values = [self.env.unwrapped.spec.id, self.highscore, str(timedelta(seconds=duration)), self.n_episodes,
-                  self.n_frames, best_cell.get_trajectory(), scores, n_cells, discoveries, updates]
+                  self.n_frames, best_cell.get_trajectory(), scores, n_cells, iter_durations]
         self.logger.add(names, values)
         self.logger.save()
 
