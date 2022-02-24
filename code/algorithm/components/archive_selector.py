@@ -1,62 +1,52 @@
 import numpy as np
+from utils.dynamicarray import DynamicArray
 
 
-class ReverseCountSelector:
-    def sample(self, archive):
-        visits = [cell.visits for cell in archive.values()]
-        # Example
-        # [1, 4, 5, 4] ->
-        # [5, 2, 1, 2]
-        weights = [max(visits) + 1 - v for v in visits]
-        probs = [w / sum(weights) for w in weights]
-        return np.random.choice(list(archive.values()), 1, p=probs)[0]
+SIZE = 50000
+def to_weight(n_visits): return 1 / np.sqrt(1 / n_visits + 1)
 
 
-class RouletteWheel:
-    def initialize(self, cell):
-        self.cells = [cell]
-        self.weights = [1 / np.sqrt(2)]
+# class ReverseCountSelector:
+#     def sample(self, archive):
+#         n_visits = [cell.n_visits for cell in archive.values()]
+#         # Example
+#         # [1, 4, 5, 4] ->
+#         # [5, 2, 1, 2]
+#         weights = [max(n_visits) + 1 - v for v in n_visits]
+#         probs = [w / sum(weights) for w in weights]
+#         return np.random.choice(list(archive.values()), 1, p=probs)[0]
 
-    def update_weight(self, index):
-        self.weights[index] = 1 / np.sqrt((1 / self.weights[index]) ** 2 + 1)
+class Selector:
+    def __init__(self):
+        self.cells = DynamicArray(SIZE, dtype=object)
+        self.weights = DynamicArray(SIZE, dtype=np.float32)
 
-    def add_cell(self, cell):
+    def update_weight(self, index, n_visits):
+        # self.weights[index] = 1 / np.sqrt((1 / self.weights[index]) ** 2 + 1)
+        self.weights[index] = to_weight(n_visits)
+
+    def add(self, cell):
         self.cells.append(cell)
-        self.weights.append(1 / np.sqrt(2))
+        self.weights.append(to_weight(cell.visits))
+        # self.weights.append(1 / np.sqrt(2))
+
+
+class RouletteWheel(Selector):
+
+    def __init__(self):
+        super().__init__()
 
     def sample(self):
         probs = [w / sum(self.weights) for w in self.weights]
-        return np.random.choice(self.cells, 1, p=probs)[0]
+        return np.random.choice(self.cells.to_numpy(), 1, p=probs)[0]
 
 
-class StochasticAcceptance:
-    # def sample(self, archive):
-    #     visits = [cell.visits for cell in archive.values()]
-    #     weights = [1 / np.log(c.visits + 1) for c in archive.values()]
-    #     probs = [w / sum(weights) for w in weights]
-    #     return np.random.choice(list(archive.values()), 1, p=probs)[0]
-    # def __init__(self):
-    # self.cells = []
+class StochasticAcceptance(Selector):
 
-    def initialize(self, cell):
-        self.cells = [cell]
-        self.weights = [1 / np.sqrt(2)]
-        self.w_max = 1 / np.sqrt(2)
-
-    # def update(self, cells):
-    #     self.cells = cells
-    #     weights = np.array([c.get_weight() for c in cells])
-    #     self.probs = weights / sum(weights)
-
-    def update_weight(self, index):
-        # Increases visits by 1 and updates weight accordingly
-        # Maybe inefficient? Alternative: separate visits and weights lists
-        self.weights[index] = 1 / np.sqrt((1 / self.weights[index]) ** 2 + 1)
-
-    def add_cell(self, cell):
-        # Append cell to the end of cells, and append init weight to end of weights
-        self.cells.append(cell)
-        self.weights.append(1 / np.sqrt(2))
+    def __init__(self):
+        super().__init__()
+        # Weight is highest if cell visited only once.
+        self.w_max = to_weight(1)
 
     def sample(self):
         i = np.random.randint(0, len(self.weights))
@@ -66,9 +56,3 @@ class StochasticAcceptance:
             return self.cells[i]
         else:
             return self.sample()
-        # return self.cells[i]
-        # visits = [cell.visits for cell in archive.values()]
-        # weights = [1 / np.log(c.visits + 1) for c in archive.values()]
-        # probs = [w / sum(weights) for w in weights]
-
-        # return np.random.choice(self.cells, 1, p=self.probs)[0]

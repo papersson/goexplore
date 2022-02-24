@@ -3,7 +3,7 @@ import datetime
 from pathlib import Path
 from utils.logger import Logger
 from algorithm.components.downsampler import CoarseBinarizer, UberReducer
-from algorithm.components.archive_selector import ReverseCountSelector, RouletteWheel, StochasticAcceptance
+from algorithm.components.archive_selector import RouletteWheel, StochasticAcceptance
 from algorithm.components.agent import ActionRepetitionAgent, RandomAgent
 from algorithm.goexplore import GoExplore
 import gym
@@ -17,7 +17,7 @@ def run_experiments(experiment_name, games, seeds, frames_grid):
 
     downsampler = UberReducer(11, 8, 16)
     # downsampler = CoarseBinarizer()
-    selector = RouletteWheel()
+    selector = StochasticAcceptance()
     # selector = ReverseCountSelector()
 
     for frames in frames_grid:

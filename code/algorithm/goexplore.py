@@ -46,7 +46,7 @@ class GoExplore:
 
         # Add starting state cell to cell selector
         cell = Cell(simulator_state)
-        self.cell_selector.initialize(cell)
+        self.cell_selector.add(cell)
 
         # self.highscore, self.n_frames, self.n_episodes = 0, 0, 0
         scores, n_cells, updates, discoveries = [], [], [], []
@@ -122,8 +122,8 @@ class GoExplore:
             if cell_representation not in cells_seen_during_iteration:
                 cells_seen_during_iteration.add(cell_representation)
                 cell_index = self.archive[cell_representation]
-                self.cell_selector.update_weight(cell_index)
-                # cell.increment_visits()
+                cell.increment_visits()
+                self.cell_selector.update_weight(cell_index, cell.visits)
 
             if score > self.highscore:
                 self.highscore = score
@@ -134,7 +134,7 @@ class GoExplore:
             if is_terminal:
                 cell.set_done()
                 break
-            if self.verbose and self.n_frames % 100000 == 0:
+            if self.verbose and self.n_frames % 50000 == 0:
                 print(
                     f'Frames: {self.n_frames}\tScore: {self.highscore}\t Cells: {len(self.archive)}')
         # updates.append(n_updates)
@@ -154,12 +154,12 @@ class GoExplore:
                 simulator_state = self.env.unwrapped.clone_state(
                     include_rng=True)
                 cell.update(simulator_state, trajectory, score)
-                self.cell_selector.update_weight(cell_index)
+                self.cell_selector.update_weight(cell_index, cell.visits)
                 # n_updates += 1
         else:
             simulator_state = self.env.unwrapped.clone_state(include_rng=True)
             cell = Cell(simulator_state, trajectory, score)
-            self.cell_selector.add_cell(cell)
+            self.cell_selector.add(cell)
             archive[cell_representation] = self.cell_index
             self.cell_index += 1
             # n_discoveries += 1
