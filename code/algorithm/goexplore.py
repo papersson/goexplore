@@ -49,12 +49,13 @@ class GoExplore:
         self.cell_selector.add(cell)
 
         # self.highscore, self.n_frames, self.n_episodes = 0, 0, 0
-        scores, n_cells, iter_durations = [], [], []
+        scores, n_cells, iter_durations, steps_in_iterations = [], [], [], []
         while (self.n_frames < self.max_frames):
+            print('Processed frames', self.n_frames, end='\r')
             iter_start = time.time()
             # Sample cell from archive
             cell = self.cell_selector.sample()
-            self._explore_from(cell)
+            steps_in_iteration = self._explore_from(cell)
 
             self.n_episodes += 1
 
@@ -63,8 +64,9 @@ class GoExplore:
             scores.append(self.highscore)
             n_cells.append(len(self.archive))
             iter_durations.append(round(iter_end - iter_start, 3))
-            print(
-                f'Processed frames: {self.n_frames}/{self.max_frames} Iteration time: {round(iter_end - iter_start, 3)}s', end='\r')
+            steps_in_iterations.append(steps_in_iteration)
+            # print(
+            #     f'Processed frames: {self.n_frames}/{self.max_frames}\tIteration time: {round(iter_end - iter_start, 3)}s\tNum cells: {len(self.cell_selector.cells)}\tSteps per iteration: {steps_in_iteration}', end='\r')
 
         # Extract cell that reached terminal state with highest score and smallest trajectory
         # cells = list(archive.values())
@@ -76,9 +78,9 @@ class GoExplore:
         # Save logs
         duration = (time.time() - start)
         names = ['env', 'highscore', 'duration', 'episodes', 'n_frames',
-                 'trajectory', 'scores', 'n_cells', 'iter_durations']
+                 'trajectory', 'scores', 'n_cells', 'iter_durations', 'steps_per_iteration']
         values = [self.env.unwrapped.spec.id, self.highscore, str(timedelta(seconds=duration)), self.n_episodes,
-                  self.n_frames, best_cell.get_trajectory(), scores, n_cells, iter_durations]
+                  self.n_frames, best_cell.get_trajectory(), scores, n_cells, iter_durations, steps_in_iterations]
         self.logger.add(names, values)
         self.logger.save()
 
@@ -95,9 +97,10 @@ class GoExplore:
         # Maintain seen set to only increment visits at most once per exploration iteration
         cells_seen_during_iteration = set()
 
-        while (n_steps < MAX_STEPS and not is_terminal):
+        while (n_steps < MAX_STEPS):
             # Interact
             action = self.agent.act()
+            # self.env.render()
             state, reward, is_terminal, _ = self.env.step(action)
             cell_representation = self.downsampler.process(state)
 
@@ -144,12 +147,17 @@ class GoExplore:
 
             n_steps += 1
             self.n_frames += 1
+            print(
+                f'Iterations: {self.n_episodes}\tSteps: {n_steps} \t n_steps < MAX_STEPS: {n_steps < MAX_STEPS} \t is_terminal: {is_terminal}', end='\r')
+            # if self.n_frames > 100000 - 150:
+            #     time.sleep(1)
             if is_terminal:
                 cell.set_done()
-                break
+                # break
             # if self.verbose and self.n_frames % 50000 == 0:
             #     print(
             #         f'Frames: {self.n_frames}\tScore: {self.highscore}\t Cells: {len(self.archive)}')
+        return n_steps
 
 
 class Cell:

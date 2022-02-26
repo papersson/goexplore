@@ -18,8 +18,10 @@ def to_weight(n_visits): return 1 / np.sqrt(1 / n_visits + 1)
 
 class Selector:
     def __init__(self):
-        self.cells = DynamicArray(SIZE, dtype=object)
-        self.weights = DynamicArray(SIZE, dtype=np.float32)
+        # self.cells = DynamicArray(SIZE, dtype=object)
+        # self.weights = DynamicArray(SIZE, dtype=np.float32)
+        self.cells = []
+        self.weights = []
 
     def update_weight(self, index, n_visits):
         # self.weights[index] = 1 / np.sqrt((1 / self.weights[index]) ** 2 + 1)
