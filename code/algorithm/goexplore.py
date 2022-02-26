@@ -65,8 +65,8 @@ class GoExplore:
             n_cells.append(len(self.archive))
             iter_durations.append(round(iter_end - iter_start, 3))
             steps_in_iterations.append(steps_in_iteration)
-            # print(
-            #     f'Processed frames: {self.n_frames}/{self.max_frames}\tIteration time: {round(iter_end - iter_start, 3)}s\tNum cells: {len(self.cell_selector.cells)}\tSteps per iteration: {steps_in_iteration}', end='\r')
+            print(
+                f'Processed frames: {self.n_frames}/{self.max_frames}\tIteration time: {round(iter_end - iter_start, 3)}s\tNum cells: {len(self.cell_selector.cells)}', end='\r')
 
         # Extract cell that reached terminal state with highest score and smallest trajectory
         # cells = list(archive.values())
@@ -147,8 +147,8 @@ class GoExplore:
 
             n_steps += 1
             self.n_frames += 1
-            print(
-                f'Iterations: {self.n_episodes}\tSteps: {n_steps} \t n_steps < MAX_STEPS: {n_steps < MAX_STEPS} \t is_terminal: {is_terminal}', end='\r')
+            # print(
+            #     f'Iterations: {self.n_episodes}\tSteps: {n_steps} \t n_steps < MAX_STEPS: {n_steps < MAX_STEPS} \t is_terminal: {is_terminal}', end='\r')
             # if self.n_frames > 100000 - 150:
             #     time.sleep(1)
             if is_terminal:

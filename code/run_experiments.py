@@ -23,7 +23,7 @@ def run_experiments(experiment_name, games, seeds, frames_grid):
     for frames in frames_grid:
         for game in games:
             env = gym.make(f'{game}Deterministic-v4')
-            agent = RandomAgent(env.action_space)
+            agent = ActionRepetitionAgent(env.action_space)
             for seed in seeds:
                 params = [seed, game, str(frames)]
                 logger = Logger(folder=str(path), params=params)

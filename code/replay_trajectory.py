@@ -29,7 +29,7 @@ def replay(actions_taken, env):
 def read(json_file):
     with open(json_file) as f:
         d = json.load(f)
-        return d['env'], d['action_history']
+        return d['env'], d['trajectory']
 
 
 def repeat_upsample(rgb_array, k=1, l=1, err=[]):
