@@ -16,8 +16,8 @@ class DynamicArray:
         self.array[self.end] = x
         self.end += 1
 
-    def set_at(self, i, x):
-        self.array[i] = x
+    # def set_at(self, i, x):
+    #     self.array[i] = x
 
     def to_numpy(self):
         return self.array[:self.end]

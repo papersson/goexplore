@@ -15,9 +15,10 @@ def run_experiments(experiment_name, games, seeds, frames_grid):
     path = Path(f'experiments/{date}_{experiment_name}')
     path.mkdir(exist_ok=True)
 
+    # downsampler = UberReducer(8, 8, 8)
     downsampler = UberReducer(11, 8, 16)
     # downsampler = CoarseBinarizer()
-    selector = Uniform()
+    selector = StochasticAcceptance()
     # selector = ReverseCountSelector()
 
     for frames in frames_grid:
