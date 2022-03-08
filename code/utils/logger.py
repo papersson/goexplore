@@ -29,8 +29,8 @@ class Logger:
         with open(filename + '.json', 'w', encoding='utf-8') as f:
             json.dump(self.logs, f, indent=4)
 
-        print(f'Saving trajectory to "{filename}.traj"')
-        with open(filename + '.traj', 'wb') as f:
+        print(f'Saving trajectory to "{filename}.trajectory"')
+        with open(filename + '.trajectory', 'wb') as f:
             pickle.dump(trajectory, f)
 
         data = Data(scores, n_cells, iter_durations)
