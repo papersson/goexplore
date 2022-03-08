@@ -58,7 +58,7 @@ parser.add_argument('--seeds', type=int, nargs='+',
                     default=[0], help='Experiment seed')
 parser.add_argument('--frames', type=int, nargs='+', default=[1000],
                     help='Training frames')
-parser.add_argument('--no_logger', dest='no_logger', action='store_true')
+parser.add_argument('--no-logging', dest='no_logging', action='store_true')
 parser.add_argument('--agents', type=str, nargs='+', default=['ActRep'])
 parser.add_argument('--selectors', type=str,
                     nargs='+', default=['StochAccept'])
@@ -81,4 +81,4 @@ args = parser.parse_args()
 
 if __name__ == '__main__':
     run_experiments(args.exp_name, args.games, args.seeds,
-                    args.frames, args.no_logger, args.agents, args.selectors, args.widths, args.heights, args.depths)
+                    args.frames, args.no_logging, args.agents, args.selectors, args.widths, args.heights, args.depths)

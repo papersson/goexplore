@@ -1,4 +1,4 @@
-from tqdm import tqdm
+from tqdm import tqdm, trange
 from utils.logger import Logger
 import numpy as np
 import random
@@ -20,6 +20,7 @@ class GoExplore:
         self.downsampler = downsampler
         self.cell_selector = cell_selector
         self.max_frames = max_frames
+        self.max_frames_per_iteration = 100
         self.verbose = verbose
         self.logger = logger
         np.random.seed(self.seed)
@@ -48,28 +49,29 @@ class GoExplore:
         cell = Cell(simulator_state)
         self.cell_selector.add(cell)
 
-        # self.highscore, self.n_frames, self.n_episodes = 0, 0, 0
-        scores, n_cells, iter_durations, steps_in_iterations = [], [], [], []
-        while (self.n_frames < self.max_frames):
-            print('Processed frames', self.n_frames, end='\r')
-            iter_start = time.time()
-            # Sample cell from archive
-            cell = self.cell_selector.sample()
-            steps_in_iteration = self._explore_from(cell)
+        scores, n_cells, iter_durations = [], [], []
+        with trange(int(self.max_frames / self.max_frames_per_iteration)) as t:
+            for i in t:
+                iter_start = time.time()
+                t.set_description(f'Iteration {i}')
+                t.set_postfix(num_cells=len(self.cell_selector.cells),
+                              frames=(i+1) * self.max_frames_per_iteration)
 
-            self.n_episodes += 1
+                # Sample cell from archive
+                cell = self.cell_selector.sample()
+                steps_in_iteration = self._explore_from(cell)
 
-            # Track for logging
-            iter_end = time.time()
-            scores.append(self.highscore)
-            n_cells.append(len(self.archive))
-            iter_durations.append(round(iter_end - iter_start, 3))
-            steps_in_iterations.append(steps_in_iteration)
-            print(
-                f'Processed frames: {self.n_frames}/{self.max_frames}\tIteration time: {round(iter_end - iter_start, 3)}s\tNum cells: {len(self.cell_selector.cells)}', end='\r')
+                self.n_episodes += 1
+
+                # Track for plotting
+                iter_end = time.time()
+                scores.append(self.highscore)
+                n_cells.append(len(self.archive))
+                iter_durations.append(round(iter_end - iter_start, 3))
+            # print(
+            #     f'Processed frames: {self.n_frames}/{self.max_frames}\tIteration time: {round(iter_end - iter_start, 3)}s\tNum cells: {len(self.cell_selector.cells)}', end='\r')
 
         # Extract cell that reached terminal state with highest score and smallest trajectory
-        # cells = list(archive.values())
         cells = self.cell_selector.cells
         solved_cells = [cell for cell in cells if cell.done is True]
         best_cell = sorted(solved_cells)[
@@ -93,12 +95,12 @@ class GoExplore:
         # Termination criteria
         is_terminal = False
         n_steps = 0
-        MAX_STEPS = 100
+        # MAX_STEPS = 100
 
         # Maintain seen set to only increment visits at most once per exploration iteration
         cells_seen_during_iteration = set()
 
-        while (n_steps < MAX_STEPS):
+        while (n_steps < self.max_frames_per_iteration):
             # Interact
             action = self.agent.act()
             # self.env.render()
