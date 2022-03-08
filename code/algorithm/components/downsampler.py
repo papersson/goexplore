@@ -46,3 +46,6 @@ class UberReducer:
         diff = 8 - bits  # Assumes 2^8 = 256 original depth
         k = 2**diff
         return k * (img // k)
+
+    def __repr__(self):
+        return f'Downsampler(w={self.width},h={self.height},d={self.num_colors})'

@@ -1,5 +1,9 @@
+from collections import namedtuple
 import datetime
 import json
+import pickle
+
+Data = namedtuple('Data', 'scores n_cells iter_durations')
 
 
 class Logger:
@@ -12,13 +16,24 @@ class Logger:
 
     def save(self, experiment_name=''):
         date = datetime.datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
-        filename = '_'.join(self.params[1:])
-        filename += f'_Seed{self.params[0]}'
+        filename = '_'.join(self.params[:-1])
+        filename += f'_Seed{self.params[-1]}'
         if self.folder:
-            filename = f'{self.folder}/{filename}.json'
-        # else:
-        #     filename = f'experiments/{date}_seed{self.seed}_{experiment_name}.json'
+            filename = f'{self.folder}/{filename}'
 
-        with open(filename, 'w', encoding='utf-8') as f:
+        trajectory = self.logs.pop('trajectory')
+        scores = self.logs.pop('scores')
+        n_cells = self.logs.pop('n_cells')
+        iter_durations = self.logs.pop('iter_durations')
+        print(f'Saving results to "{filename}.json"')
+        with open(filename + '.json', 'w', encoding='utf-8') as f:
             json.dump(self.logs, f, indent=4)
-        print(f'Saving results to "{filename}"')
+
+        print(f'Saving trajectory to "{filename}.traj"')
+        with open(filename + '.traj', 'wb') as f:
+            pickle.dump(trajectory, f)
+
+        data = Data(scores, n_cells, iter_durations)
+        print(f'Saving plotting data to "{filename}.data"')
+        with open(filename + '.data', 'wb') as f:
+            pickle.dump(data, f)

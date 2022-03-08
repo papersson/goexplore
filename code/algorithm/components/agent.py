@@ -11,6 +11,9 @@ class RandomAgent:
         # return random.choice(self.action_space)
         return self.action_space.sample()
 
+    def __repr__(self):
+        return 'RandomAgent'
+
 
 class ActionRepetitionAgent:
 
@@ -29,3 +32,6 @@ class ActionRepetitionAgent:
             self.action = self.action_space.sample()
         self.remaining -= 1
         return self.action
+
+    def __repr__(self):
+        return 'ActionRepetitionAgent'

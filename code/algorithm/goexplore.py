@@ -12,7 +12,7 @@ sys.path.append('..')
 
 class GoExplore:
     def __init__(self, agent, downsampler, cell_selector,
-                 env, max_frames=4000000, seed=3533, verbose=True, logger=Logger(3533)):
+                 env, logger, max_frames=4000000, seed=3533, verbose=True):
         # Set seed, environment/game, agent, downsampler, and archive selector
         self.seed = seed
         self.env = env
@@ -77,12 +77,13 @@ class GoExplore:
 
         # Save logs
         duration = (time.time() - start)
-        names = ['env', 'highscore', 'duration', 'episodes', 'n_frames',
-                 'trajectory', 'scores', 'n_cells', 'iter_durations', 'steps_per_iteration']
-        values = [self.env.unwrapped.spec.id, self.highscore, str(timedelta(seconds=duration)), self.n_episodes,
-                  self.n_frames, best_cell.get_trajectory(), scores, n_cells, iter_durations, steps_in_iterations]
-        self.logger.add(names, values)
-        self.logger.save()
+        if self.logger:
+            names = ['highscore', 'duration', 'n_frames',
+                     'trajectory', 'scores', 'n_cells', 'iter_durations']
+            values = [self.highscore, str(timedelta(seconds=duration)),
+                      self.n_frames, best_cell.get_trajectory(), scores, n_cells, iter_durations]
+            self.logger.add(names, values)
+            self.logger.save()
 
     # def _explore_from(self, cell, archive, self.highscore, self.n_frames, updates, discoveries):
     def _explore_from(self, cell):
