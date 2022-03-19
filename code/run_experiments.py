@@ -41,8 +41,8 @@ def run_experiments(experiment_name, games, seeds, frames_grid, no_logger, agent
                                 for d in depths:
                                     downsampler = UberReducer(w, h, d)
 
-                                    params = [f'{game}Deterministic-v4', agent.__class__.__name__,
-                                              selector.__class__.__name__, str(downsampler), seed]
+                                    params = [f'Frames{frames}', f'{game}Deterministic-v4', agent.__class__.__name__,
+                                              selector.__class__.__name__, str(downsampler), f'Seed{seed}']
                                     logger = Logger(folder=str(path),
                                                     params=params) if not no_logger else None
                                     GoExplore(agent, downsampler, selector, seed=seed,
