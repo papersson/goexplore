@@ -1,10 +1,8 @@
-# from __future__ import annotations
 from copy import deepcopy
 from enum import Enum
 import time
 import gym
 from dataclasses import dataclass, field
-# from ale_py import ALEState
 from typing import Any, List, Dict, Tuple, Optional
 import cv2
 import numpy as np
@@ -34,17 +32,18 @@ class ActionNode:
     full cell trajectory when the algorithm has terminated. """
 
     def __init__(self, action, prev=None):
-        # self.prev = prev
+        self.prev = prev
         self.action = action
 
-    # def __repr__(self):
-    #     return str(self.action)
+    def __repr__(self):
+        return str(self.action)
         # return self.action_names[self.action]
 
 
 @dataclass
 class Cell:
     """ Class for tracking cell data. """
+    insertion_index: int
     score: float
     traj_len: int
     simulator_state: Any = field(repr=False)
@@ -66,6 +65,14 @@ class Cell:
         env.unwrapped.restore_state(self.simulator_state)
         return self.latest_action, self.score, self.traj_len
 
+    def get_trajectory(self):
+        actions = []
+        a = self.latest_action
+        while a:
+            actions = [a.action] + actions  # Prepend previous actions
+            a = a.prev
+        return actions
+
 
 Command = Enum('Command', 'DISCOVERY UPDATE READY DONE')
 
@@ -74,23 +81,32 @@ Command = Enum('Command', 'DISCOVERY UPDATE READY DONE')
 class Message:
     command: Command
     data: Optional[Tuple]
+    timestep: int
 
 
-def explore(in_q, out_q, env, seed, MAX_FRAMES, archive, cells):
-    env.seed(np.random.randint(0, 2**32))
+def explore(parent, out_q, env, seed, MAX_FRAMES, archive, cells):
+    env.seed(seed)
     env.action_space.seed(seed)
     np.random.seed(seed)
+    # seed = 0
+    # env.seed(seed)
+    # env.action_space.seed(seed)
+    # np.random.seed(seed)
+    t = 0
 
     # while current_frame < MAX_FRAMES:
-    for current_iteration in range(MAX_FRAMES // 100):
-        out_q.put(Message(Command.READY, None))
-        # archive, cells = in_q.get()
-        in_q.get()
+    from tqdm import tqdm
+    for current_iteration in tqdm(range(MAX_FRAMES // 100)):
+        # for current_iteration in tqdm(range(MAX_FRAMES // 100)):
+        # print(len(cells))
 
+        # out_q.put(Message(Command.READY, None, t))
+        # parent.get()
         cell = cells[np.random.randint(0, len(cells))]
         # print(cell)
         latest_action, score, traj_len = cell.load(env)
         for _ in range(100):
+            t += 1
             action = env.action_space.sample()
             state, reward, _, _ = env.step(action)
 
@@ -101,87 +117,125 @@ def explore(in_q, out_q, env, seed, MAX_FRAMES, archive, cells):
 
             if cell_repr not in archive:
                 out_q.put(Message(Command.DISCOVERY,
-                                  (cell_repr, score, traj_len, simulator_state, latest_action)))
+                                  (cell_repr, score, traj_len,
+                                   simulator_state, latest_action),
+                                  t
+                                  ))
+                # parent.get()
             else:
                 cell_index = archive[cell_repr]
                 cell = cells[cell_index]
                 if cell.should_update(score, traj_len):
+                    # if score > 0:
+                    #     print(t)
+                    #     print(score)
                     out_q.put(
-                        Message(Command.UPDATE, (cell, score, traj_len, simulator_state, latest_action)))
-    out_q.put(Message(Command.DONE, None))
+                        Message(Command.UPDATE, (cell_index, score, traj_len, simulator_state, latest_action), t))
+                    # parent.get()
+    out_q.put(Message(Command.DONE, None, t))
 
 
+archive = {}
+cells = []
 if __name__ == "__main__":
+    import sys
+    sys.setrecursionlimit(1000000000)
     with mp.Manager() as manager:
         archive: Dict[Cell, int] = manager.dict()
         cells: List[Cell] = manager.list()
-        end_index: int = 0
+        insertion_index: int = 0
 
         env = gym.make('PongDeterministic-v4')
         # ActionNode.action_names = env.unwrapped.get_action_meanings()
 
+        # Initialize archive
         state: np.ndarray = env.reset()
         cell_repr: Tuple = downsample(state)
-        archive[cell_repr] = end_index
-        end_index += 1
+        archive[cell_repr] = insertion_index
 
         simulator_state: Any = env.unwrapped.clone_state(include_rng=True)
-        cell: Cell = Cell(0.0, 0, simulator_state)
+        cell: Cell = Cell(insertion_index, 0.0, 0, simulator_state)
         cells.append(cell)
+        insertion_index += 1
 
-        in_q = mp.SimpleQueue()
-        out_q = mp.SimpleQueue()
-        n_processes = mp.cpu_count()
+        # Initialize processes; multiple producers, single consumer
+        out_q = mp.Queue()
+        parent = mp.Queue()
+        n_processes = 1
+        # n_processes = mp.cpu_count() * 2
         seeds = [np.random.randint(0, 2**32) for _ in range(n_processes)]
-        max_frames = 500000 // n_processes
-        processes = [mp.Process(target=explore, args=(in_q, out_q, deepcopy(
+        # max_frames = 300
+        max_frames = int(100000 // n_processes)
+        processes = [mp.Process(target=explore, args=(parent, out_q, deepcopy(
             env), seeds[i], max_frames, archive, cells), daemon=True) for i in range(n_processes)]
         start = time.time()
         for p in processes:
-            # in_q.put((archive, cells))
             p.start()
         dones = []
-        while len(dones) < 4:
+        while len(dones) < n_processes:
             # while True:
             msg: Message = out_q.get()
+            # print(insertion_index)
 
-            if msg.command == Command.READY:
-                in_q.put('go')
-                # print('READY')
-            elif msg.command == Command.DISCOVERY:
+            # if msg.command == Command.READY:
+            # parent.put((archive, cells))
+            if msg.command == Command.DISCOVERY:
                 # print('DISCOVERY')
                 cell_repr, score, traj_len, simulator_state, latest_action = msg.data
                 if cell_repr not in archive:
-                    archive[cell_repr] = end_index
-                    end_index += 1
-                    cell = Cell(score, traj_len,
+                    archive[cell_repr] = insertion_index
+                    cell = Cell(insertion_index, score, traj_len,
                                 simulator_state, latest_action)
+                    insertion_index += 1
+                    # print(cell)
                     cells.append(cell)
             elif msg.command == Command.UPDATE:
                 # print('UPDATE')
-                cell, score, traj_len, simulator_state, latest_action = msg.data
+                cell_index, score, traj_len, simulator_state, latest_action = msg.data
+                # print(score)
+                cell = cells[cell_index]
+                if score >= 21:
+                    break
+                # cell should be retrieved from local cells
+                t = msg.timestep
                 if cell.should_update(score, traj_len):
-                    cell.update(score, traj_len,
-                                simulator_state, latest_action)
+                    # if t in range(200, 300):
+                    #     print(t)
+                    #     print(f'Before update: {cell}')
+                    #     cells[cell_index] = Cell(
+                    #         cell_index, score, traj_len, simulator_state, latest_action)
+                    #     # cell.update(score, traj_len,
+                    #     #             simulator_state, latest_action)
+                    #     print(f'After update: {cell}')
+                    # else:
+                    cells[cell_index] = Cell(
+                        cell_index, score, traj_len, simulator_state, latest_action)
+                # parent.put(None)
             elif msg.command == Command.DONE:
                 dones.append('done')
             else:
                 raise NotImplementedError
+            # parent.put(None)
         end = time.time()
-        print(end-start)
+        print('Time:', end-start)
         for p in processes:
             p.join()
 
-        # print(archive.values())
-        print(len(archive))
-        print(len(cells))
-        print(end_index)
+        print('Archive size:', len(archive))
+        print('Cells array size:', len(cells))
         max_score = 0
-        for cell in cells:
+        for cell in cells[:50]:
+            print(cell)
             if cell.score > max_score:
                 max_score = cell.score
-        # print(cells)
+                best_cell = cell
         print(max_score)
+        traj = best_cell.get_trajectory()
+        with open('mp_traj.npy', 'wb') as f:
+            np.save(f, np.array(traj))
 
         assert len(archive) == len(cells)
-        assert len(archive) == end_index
+        assert len(archive) == insertion_index
+
+        # Fast, but doesn't perform very well. Reaches scores of 2-3 on Pong after 10M iterations,
+        # without multiprocessing Pong is solved (score of 21) after 3-4M iterations.

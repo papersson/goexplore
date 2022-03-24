@@ -1,7 +1,5 @@
-# from __future__ import annotations
 import gym
 from dataclasses import dataclass, field
-# from ale_py import ALEState
 from typing import Any, List, Dict, Tuple
 import cv2
 import numpy as np
@@ -23,6 +21,7 @@ def downsample(state: np.ndarray) -> Tuple:
     k = 2**diff
     state = k * (state // k)
 
+    # Return as tuple, used as key in archive
     return tuple(state.flatten())
 
 
@@ -61,7 +60,7 @@ class Cell:
 
 
 def explore(archive, cells, end_index, lock, env, seed):
-    print(seed)
+    # print(seed)
     env.seed(np.random.randint(0, 2**32))
     env.action_space.seed(seed)
     np.random.seed(seed)
@@ -69,7 +68,6 @@ def explore(archive, cells, end_index, lock, env, seed):
 
     for _ in range(n_iterations):
         cell = cells[np.random.randint(0, len(cells))]
-        print(cell)
         latest_action, score, traj_len = cell.load(env)
         for _ in range(100):
             action = env.action_space.sample()
@@ -93,7 +91,7 @@ def explore(archive, cells, end_index, lock, env, seed):
                 cell = cells[cell_index]
                 cell.update_if_better(score, traj_len)
             lock.release()
-    print(n_iterations * 100)
+    # print(n_iterations * 100)
 
 
 if __name__ == "__main__":
@@ -122,9 +120,7 @@ if __name__ == "__main__":
 
     import time
     import sys
-    print(sys.getrecursionlimit())
-    sys.setrecursionlimit(10000000)
-    print(sys.getrecursionlimit())
+    sys.setrecursionlimit(10000)
     start = time.time()
     for p in processes:
         p.start()
@@ -132,10 +128,9 @@ if __name__ == "__main__":
         p.join()
     end = time.time()
 
-    print(end-start)
-    print(len(archive))
-    print(len(cells))
-    print(end_index)
+    print('Time:', end-start)
+    print('Archive size:', len(archive))
+    print('Cells size:', len(cells))
     assert len(archive) == len(cells)
     assert end_index.value == len(cells)
     # Needs shared memory to modify archive, cells, and end_index. Needs locks to
