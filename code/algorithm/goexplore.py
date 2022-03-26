@@ -71,7 +71,6 @@ class GoExplore:
             self.logger.add(names, values)
             self.logger.save()
 
-    # def _explore_from(self, cell, archive, self.highscore, self.n_frames, updates, discoveries):
     def _explore_from(self, cell):
         # Restore to cell's simulator state and retrieve its score and trajectory
         latest_action, traj_len, score = cell.load(self.env)
@@ -94,7 +93,7 @@ class GoExplore:
 
             # Handle cell event. Cases:
             # Cell discovered: add to archive
-            # Cell is better than archived cell: update archive
+            # Cell is better than archived cell: update cell in archive
             # Cell is not discovered or better: do nothing
             cell_representation = self.downsampler.process(state)
             if cell_representation not in self.archive:

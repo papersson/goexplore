@@ -110,6 +110,7 @@ def explore(parent, out_q, env, seed, MAX_FRAMES, archive, cells):
             action = env.action_space.sample()
             state, reward, _, _ = env.step(action)
 
+            simulator_state = env.unwrapped.clone_state(include_rng=True)
             cell_repr = downsample(state)
             latest_action = ActionNode(action, prev=latest_action)
             traj_len += 1
