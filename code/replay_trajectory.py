@@ -3,6 +3,7 @@ import gym
 import json
 import argparse
 import numpy as np
+import pickle
 
 p = argparse.ArgumentParser()
 default_demo = 'demo.json'
@@ -26,10 +27,11 @@ def replay(actions_taken, env):
     env.close()
 
 
-def read(json_file):
-    with open(json_file) as f:
-        d = json.load(f)
-        return d['env'], d['trajectory']
+def read(file):
+    env = file.split('_')[2]
+    with open(file, 'rb') as f:
+        actions = pickle.load(f)
+    return env, actions
 
 
 def repeat_upsample(rgb_array, k=1, l=1, err=[]):
