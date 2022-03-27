@@ -7,4 +7,5 @@ notebooks/
 *.sh
 src/run_experiments.py
 src/run_overnight.py
+./vscode
 
