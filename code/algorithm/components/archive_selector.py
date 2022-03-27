@@ -48,10 +48,6 @@ class Archive:
 
     def __len__(self):
         return len(self.archive)
-        # if key in self.archive:
-        #     return self.archive[key]
-        # else:
-        #     raise KeyError(f"Cell not in archive")
 
 
 class RouletteWheel(Archive):

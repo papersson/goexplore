@@ -11,11 +11,11 @@ from typing import Any, List, Dict, Tuple, Optional
 import cv2
 import numpy as np
 import multiprocessing as mp
-from algorithm.components.archive_selector import Uniform
+from algorithm.components.archive_selector import Uniform, StochasticAcceptance
 
 
 def downsample(state: np.ndarray) -> Tuple:
-    width, height, num_colors = 8, 12, 16
+    width, height, num_colors = 12, 8, 16
 
     # Convert to grayscale
     state = cv2.cvtColor(state, cv2.COLOR_RGB2GRAY)
@@ -126,49 +126,14 @@ class Cell:
         return (-self.score, self.traj_len) < (-other.score, self.traj_len)
 
 
-def explore(env, MAX_FRAMES, archive, cells, insertion_index):
-    seed = 0
-    env.seed(seed)
-    env.action_space.seed(seed)
-    np.random.seed(seed)
-    t = 0
-    for current_iteration in tqdm(range(MAX_FRAMES // 100)):
-        cell = cells[np.random.randint(0, len(cells))]
-        # print(t)
-        # print(cell)
-        latest_action, traj_len, score = cell.load(env)
-        for i in range(100):
-            t += 1
-            action = env.action_space.sample()
-            # print(action)
-            state, reward, _, _ = env.step(action)
-
-            cell_repr = downsample(state)
-            latest_action = ActionNode(action, prev=latest_action)
-            traj_len += 1
-            score += reward
-
-            if cell_repr not in archive:
-                archive[cell_repr] = insertion_index
-                cell = Cell(simulator_state, latest_action, traj_len, score)
-                insertion_index += 1
-                # print(cell)
-                cells.append(cell)
-            else:
-                cell_index = archive[cell_repr]
-                cell = cells[cell_index]
-                if cell.should_update(score, traj_len):
-                    cell.update(simulator_state,
-                                latest_action, traj_len, score)
-    return insertion_index
-
-
 def explore_from(cell, env):
+
     latest_action, traj_len, score = cell.load(env)
 
     # Maintain seen set to only increment visits at most once per exploration run
     n_steps = 0
-    while (n_steps < MAX_FRAMES_PER_ITERATION):
+    # while (n_steps < MAX_FRAMES_PER_ITERATION):
+    for t in range(MAX_FRAMES_PER_ITERATION):
         # Interact
         action = env.action_space.sample()
         state, reward, is_terminal, _ = env.step(action)
@@ -186,6 +151,11 @@ def explore_from(cell, env):
         # Cell is better than archived cell: update cell in archive
         # Cell is not discovered or better: do nothing
         cell_representation = downsample(state)
+        # print(cell_representation)
+        # print('TIMESTEP', t)
+        # print('Archive size:', len(archive))
+        # print('Cell_repr in archive:', cell_representation in archive)
+        # print('======')
         if cell_representation not in archive:
             archive.add(cell_representation, cell_state)
         else:
@@ -203,9 +173,14 @@ if __name__ == "__main__":
 
     start = time.time()
     env = gym.make('PongDeterministic-v4')
+    seed = 0
+    env.seed(seed)
+    env.action_space.seed(seed)
+    np.random.seed(seed)
+    # archive = StochasticAcceptance()
     archive = Uniform()
     MAX_FRAMES_PER_ITERATION = 100
-    MAX_FRAMES = 1000
+    MAX_FRAMES = 100000
 
     # Add first cell to archive
     starting_state = env.reset()
@@ -224,35 +199,12 @@ if __name__ == "__main__":
 
             # Sample cell from archive
             cell = archive.sample()
+            # print(cell)
             cell.increment_visits()
             explore_from(cell, env)
 
     # Extract cell that reached terminal state with highest score and smallest trajectory
     best_cell = archive.get_best_cell()
-    # print(best_cell)
-
-    # archive: Dict[Tuple, int] = dict()
-    # cells: List[Cell] = list()
-    # insertion_index: int = 0
-
-    # env = gym.make('PongDeterministic-v4')
-
-    # # ActionNode.action_names = env.unwrapped.get_action_meanings()
-
-    # # Initialize archive
-    # state: np.ndarray = env.reset()
-    # cell_repr: Tuple = downsample(state)
-    # archive[cell_repr] = insertion_index
-
-    # simulator_state: Any = env.unwrapped.clone_state(include_rng=True)
-    # cell: Cell = Cell(simulator_state)
-    # print(cell)
-    # cells.append(cell)
-    # insertion_index += 1
-
-    # # MAX_FRAMES = 300
-    # MAX_FRAMES = 100000
-    # insertion_index = explore(env, MAX_FRAMES, archive, cells, insertion_index)
 
     print('Archive size:', len(archive))
     # print('Cells array size:', len(cells))
@@ -261,7 +213,7 @@ if __name__ == "__main__":
     #     print(cell)
     # # best_cell = cells[-1]
     # # print(max_score)
-    # # print(best_cell)
+    print(best_cell)
     # # traj = best_cell.latest_action
     # traj = best_cell.get_trajectory()
     # print(len(traj))
@@ -307,9 +259,10 @@ class Archive:
         self.insertion_index += 1
 
     def get_best_cell(self):
-        solved_cells = [cell for cell in self.cells if cell.done is True]
-        best_cell = sorted(solved_cells)[
-            0] if solved_cells else sorted(self.cells)[0]
+        # solved_cells = [cell for cell in self.cells if cell.done is True]
+        best_cell = sorted(self.cells)[0]
+        # [
+        # 0] if solved_cells else sorted(self.cells)[0]
         return best_cell
 
     def __getitem__(self, cell_repr):
@@ -335,6 +288,9 @@ class RouletteWheel(Archive):
     def sample(self):
         probs = [w / sum(self.weights) for w in self.weights]
         return np.random.choice(self.cells, 1, p=probs)[0]
+
+
+np.random.seed(0)
 
 
 class StochasticAcceptance(Archive):
