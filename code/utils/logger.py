@@ -3,7 +3,8 @@ import datetime
 import json
 import pickle
 
-Data = namedtuple('Data', 'scores n_cells iter_durations')
+Data = namedtuple(
+    'Data', 'scores n_cells n_updates n_discoveries iter_durations')
 
 
 class Logger:
@@ -24,6 +25,8 @@ class Logger:
         trajectory = self.logs.pop('trajectory')
         scores = self.logs.pop('scores')
         n_cells = self.logs.pop('n_cells')
+        n_updates = self.logs.pop('n_updates')
+        n_discoveries = self.logs.pop('n_discoveries')
         iter_durations = self.logs.pop('iter_durations')
         print(f'Saving results to "{filename}.json"')
         with open(filename + '.json', 'w', encoding='utf-8') as f:
@@ -33,7 +36,7 @@ class Logger:
         with open(filename + '.trajectory', 'wb') as f:
             pickle.dump(trajectory, f)
 
-        data = Data(scores, n_cells, iter_durations)
+        data = Data(scores, n_cells, n_updates, n_discoveries, iter_durations)
         print(f'Saving plotting data to "{filename}.data"')
         with open(filename + '.data', 'wb') as f:
             pickle.dump(data, f)

@@ -39,7 +39,7 @@ class GoExplore:
         cell_representation = self.downsampler.process(starting_state)
         self.archive.initialize(cell_representation, simulator_state)
 
-        scores, n_cells, iter_durations = [], [], []
+        scores, n_cells, n_updates_data, n_discoveries_data, iter_durations = [], [], [], [], []
         with trange(int(self.max_frames / MAX_FRAMES_PER_ITERATION)) as t:
             for i in t:
                 iter_start = time.time()
@@ -51,12 +51,14 @@ class GoExplore:
                 # Sample cell from archive
                 cell = self.archive.sample()
                 cell.increment_visits()
-                self._explore_from(cell)
+                n_updates, n_discoveries = self._explore_from(cell)
 
                 # Track for plotting
                 iter_end = time.time()
                 scores.append(self.highscore)
                 n_cells.append(len(self.archive))
+                n_updates_data.append(n_updates)
+                n_discoveries_data.append(n_discoveries)
                 iter_durations.append(round(iter_end - iter_start, 3))
 
         # Extract cell that reached terminal state with highest score and smallest trajectory
@@ -68,15 +70,14 @@ class GoExplore:
         duration = (time.time() - start)
         if self.logger:
             names = ['highscore', 'duration', 'n_frames',
-                     'trajectory', 'scores', 'n_cells', 'iter_durations']
-            # values = [self.highscore, str(timedelta(seconds=duration)),
-            #           self.n_frames, best_cell.get_trajectory(), scores, n_cells, iter_durations]
+                     'trajectory', 'scores', 'n_cells', 'n_updates', 'n_discoveries', 'iter_durations']
             values = [self.highscore, str(timedelta(seconds=duration)),
-                      self.n_frames, traj, scores, n_cells, iter_durations]
+                      self.n_frames, traj, scores, n_cells, n_updates_data, n_discoveries_data, iter_durations]
             self.logger.add(names, values)
             self.logger.save()
 
     def _explore_from(self, cell):
+        n_updates, n_discoveries = 0, 0
         # Restore to cell's simulator state and retrieve its score, trajectory, and latest action
         latest_action, traj_len, score = cell.load(self.env)
 
@@ -102,10 +103,12 @@ class GoExplore:
             # Cell is not discovered or better: do nothing
             cell_representation = self.downsampler.process(state)
             if cell_representation not in self.archive:
+                n_discoveries += 1
                 self.archive.add(cell_representation, cell_state)
             else:
                 cell = self.archive[cell_representation]
                 if cell.should_update(score, traj_len):
+                    n_updates += 1
                     cell.update(*cell_state)
 
             # Increment visit count/update weights if cell not seen during the episode
@@ -121,6 +124,7 @@ class GoExplore:
 
             if is_terminal:
                 cell.set_done()
+        return n_updates, n_discoveries
 
 
 class ActionGraph:
