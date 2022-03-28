@@ -3,18 +3,16 @@ from utils.dynamicarray import DynamicArray
 
 
 SIZE = 50000
-MAX_SIZE = 200000
 def to_weight(n_visits): return 1 / np.sqrt(1 / n_visits + 1)
 
 
 class Archive:
-    def __init__(self):
+    def __init__(self, max_size):
         self.archive = {}
         self.insertion_index = 0
         self.cells = DynamicArray(SIZE, dtype=object)
         self.weights = DynamicArray(SIZE, dtype=np.float32)
-        # self.cells = []
-        # self.weights = []
+        self.max_size = max_size
 
     def initialize(self, cell_repr, simulator_state):
         self.archive[cell_repr] = self.insertion_index
@@ -30,7 +28,7 @@ class Archive:
         self.weights[cell_index] = to_weight(cell.visits)
 
     def add(self, cell_repr, cell_state):
-        if len(self.archive) >= MAX_SIZE:
+        if len(self.archive) >= self.max_size:
             # Don't add more cells if archive size exceeded
             return
         cell = Cell(*cell_state)
@@ -58,8 +56,8 @@ class Archive:
 
 class RouletteWheel(Archive):
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, max_size):
+        super().__init__(max_size)
 
     def sample(self):
         probs = [w / sum(self.weights) for w in self.weights]
@@ -68,8 +66,8 @@ class RouletteWheel(Archive):
 
 class StochasticAcceptance(Archive):
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, max_size):
+        super().__init__(max_size)
         # Weight is highest if cell visited only once.
         self.w_max = to_weight(1)
 
@@ -85,8 +83,8 @@ class StochasticAcceptance(Archive):
 
 class Uniform(Archive):
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, max_size):
+        super().__init__(max_size)
 
     def sample(self):
         i = np.random.randint(0, len(self.weights))

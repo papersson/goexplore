@@ -10,7 +10,7 @@ MAX_FRAMES_PER_ITERATION = 100
 
 class GoExplore:
     def __init__(self, agent, downsampler, cell_selector,
-                 env, logger, max_frames=4000000, seed=3533, verbose=True):
+                 env, seed, max_frames, verbose, logger):
         # Set seed, environment/game, agent, downsampler, and archive selector
         self.seed = seed
         self.env = env

@@ -9,7 +9,7 @@ from algorithm.goexplore import GoExplore
 import gym
 
 
-def run_experiments(experiment_name, games, seeds, frames_grid, no_logging, agents, selectors, widths, heights, depths):
+def run_experiments(experiment_name, games, seeds, frames_grid, no_logging, agents, selectors, widths, heights, depths, max_cells):
     # Create folder with format {date_experimentname} if we want to save logs/results
     if not no_logging:
         date = datetime.datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
@@ -25,11 +25,11 @@ def run_experiments(experiment_name, games, seeds, frames_grid, no_logging, agen
                 for seed in seeds:
                     for selector in selectors:
                         if selector == 'Random':
-                            selector = Uniform()
+                            selector = Uniform(max_cells)
                         elif selector == 'Roulette':
-                            selector = RouletteWheel()
+                            selector = RouletteWheel(max_cells)
                         else:
-                            selector = StochasticAcceptance()
+                            selector = StochasticAcceptance(max_cells)
                         for w in widths:
                             for h in heights:
                                 for d in depths:
@@ -47,6 +47,8 @@ parser = argparse.ArgumentParser(description='test')
 
 parser.add_argument('--exp-name', type=str, default='',
                     help='Experiment name')
+parser.add_argument('--max-cells', type=int, nargs='+',
+                    default=[200000], help='Max number of cells allowed due to memory constraints.')
 parser.add_argument('--games', type=str, nargs='+', default=['Pong'])
 parser.add_argument('--seeds', type=int, nargs='+',
                     default=[0], help='Experiment seed')
@@ -69,4 +71,4 @@ args = parser.parse_args()
 
 if __name__ == '__main__':
     run_experiments(args.exp_name, args.games, args.seeds,
-                    args.frames, args.no_logging, args.agents, args.selectors, args.widths, args.heights, args.depths)
+                    args.frames, args.no_logging, args.agents, args.selectors, args.widths, args.heights, args.depths, args.max_cells[0])
