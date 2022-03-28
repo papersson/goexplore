@@ -45,7 +45,7 @@ def run_experiments(experiment_name, games, seeds, frames_grid, no_logging, agen
 
 parser = argparse.ArgumentParser(description='test')
 
-parser.add_argument('--exp_name', type=str, default='',
+parser.add_argument('--exp-name', type=str, default='',
                     help='Experiment name')
 parser.add_argument('--games', type=str, nargs='+', default=['Pong'])
 parser.add_argument('--seeds', type=int, nargs='+',

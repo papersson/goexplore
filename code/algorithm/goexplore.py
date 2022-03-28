@@ -25,6 +25,8 @@ class GoExplore:
         self.env.seed(self.seed)
         self.env.action_space.seed(self.seed)
 
+        self.action_graph = ActionGraph()
+
         # Track during run for plotting
         self.highscore, self.n_frames = 0, 0
 
@@ -60,19 +62,22 @@ class GoExplore:
         # Extract cell that reached terminal state with highest score and smallest trajectory
         best_cell = self.archive.get_best_cell()
         print(best_cell)
+        traj = self.action_graph.get_trajectory(best_cell.latest_action)
 
         # Save logs
         duration = (time.time() - start)
         if self.logger:
             names = ['highscore', 'duration', 'n_frames',
                      'trajectory', 'scores', 'n_cells', 'iter_durations']
+            # values = [self.highscore, str(timedelta(seconds=duration)),
+            #           self.n_frames, best_cell.get_trajectory(), scores, n_cells, iter_durations]
             values = [self.highscore, str(timedelta(seconds=duration)),
-                      self.n_frames, best_cell.get_trajectory(), scores, n_cells, iter_durations]
+                      self.n_frames, traj, scores, n_cells, iter_durations]
             self.logger.add(names, values)
             self.logger.save()
 
     def _explore_from(self, cell):
-        # Restore to cell's simulator state and retrieve its score and trajectory
+        # Restore to cell's simulator state and retrieve its score, trajectory, and latest action
         latest_action, traj_len, score = cell.load(self.env)
 
         # Maintain seen set to only increment visits at most once per exploration run
@@ -86,7 +91,9 @@ class GoExplore:
             # Track cell object state in case cell needs to be updated or added
             simulator_state = self.env.unwrapped.clone_state(
                 include_rng=True)
-            latest_action = Action(action, prev=latest_action)
+            # latest_action = ActionNode(action, timestep=traj_len, prev=latest_action)
+            latest_action = self.action_graph.get(
+                action, latest_action)
             traj_len += 1
             score += reward
             cell_state = (simulator_state, latest_action, traj_len, score)
@@ -118,10 +125,30 @@ class GoExplore:
                 cell.set_done()
 
 
-class Action:
+class ActionGraph:
+    def __init__(self):
+        self.cache = {}
+
+    def get(self, action, prev):
+        if (action, prev) in self.cache:
+            return self.cache[(action, prev)]
+        else:
+            latest_action = ActionNode(action, prev)
+            self.cache[(action, prev)] = latest_action
+            return latest_action
+
+    def get_trajectory(self, node):
+        actions = []
+        while node:
+            actions = [node.action] + actions
+            node = node.prev
+        return actions
+
+
+class ActionNode:
     def __init__(self, action, prev=None):
-        self.prev = prev
         self.action = action
+        self.prev = prev
 
     def __repr__(self):
         return str(self.action)
