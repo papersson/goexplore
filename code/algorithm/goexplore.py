@@ -91,9 +91,7 @@ class GoExplore:
             # Track cell object state in case cell needs to be updated or added
             simulator_state = self.env.unwrapped.clone_state(
                 include_rng=True)
-            # latest_action = ActionNode(action, timestep=traj_len, prev=latest_action)
-            latest_action = self.action_graph.get(
-                action, latest_action)
+            latest_action = self.action_graph.get(action, latest_action)
             traj_len += 1
             score += reward
             cell_state = (simulator_state, latest_action, traj_len, score)

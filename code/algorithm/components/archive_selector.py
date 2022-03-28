@@ -3,7 +3,7 @@ from utils.dynamicarray import DynamicArray
 
 
 SIZE = 50000
-# MAX_SIZE = 200000
+MAX_SIZE = 200000
 def to_weight(n_visits): return 1 / np.sqrt(1 / n_visits + 1)
 
 
@@ -21,12 +21,18 @@ class Archive:
         self.add(cell_repr, (simulator_state,))
 
     def update_weight(self, cell_repr):
+        if cell_repr not in self.archive:
+            # Key error if archive size exceeded; ignore
+            return
         cell_index = self.archive[cell_repr]
         cell = self.cells[cell_index]
         cell.increment_visits()
         self.weights[cell_index] = to_weight(cell.visits)
 
     def add(self, cell_repr, cell_state):
+        if len(self.archive) >= MAX_SIZE:
+            # Don't add more cells if archive size exceeded
+            return
         cell = Cell(*cell_state)
         self.archive[cell_repr] = self.insertion_index
         self.cells.append(cell)
@@ -115,14 +121,6 @@ class Cell:
 
     def set_done(self):
         self.done = True
-
-    def get_trajectory(self):
-        actions = []
-        a = self.latest_action
-        while a:
-            actions = [a.action] + actions  # Prepend previous actions
-            a = a.prev
-        return actions
 
     def __repr__(self):
         return f'Cell(score={self.score}, traj_len={self.traj_len}, visits={self.visits}, done={self.done})'
