@@ -48,7 +48,7 @@ parser = argparse.ArgumentParser(description='test')
 parser.add_argument('--exp-name', type=str, default='',
                     help='Experiment name')
 parser.add_argument('--max-cells', type=int, nargs='+',
-                    default=[200000], help='Max number of cells allowed due to memory constraints.')
+                    default=[100000], help='Max number of cells allowed due to memory constraints.')
 parser.add_argument('--games', type=str, nargs='+', default=['Pong'])
 parser.add_argument('--seeds', type=int, nargs='+',
                     default=[0], help='Experiment seed')
