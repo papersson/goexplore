@@ -69,9 +69,9 @@ class GoExplore:
         # Save logs
         duration = (time.time() - start)
         if self.logger:
-            names = ['highscore', 'duration', 'n_frames',
+            names = ['highscore', 'total_cells', 'duration', 'n_frames',
                      'trajectory', 'scores', 'n_cells', 'n_updates', 'n_discoveries', 'iter_durations']
-            values = [self.highscore, str(timedelta(seconds=duration)),
+            values = [self.highscore, len(self.archive), str(timedelta(seconds=duration)),
                       self.n_frames, traj, scores, n_cells, n_updates_data, n_discoveries_data, iter_durations]
             self.logger.add(names, values)
             self.logger.save()
