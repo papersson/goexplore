@@ -3,6 +3,7 @@ __pycache__/
 atari/
 viz/
 experiments/
+plots/
 notebooks/
 *.sh
 src/run_experiments.py
