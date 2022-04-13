@@ -1,3 +1,4 @@
+import itertools
 import numpy as np
 from utils.dynamicarray import DynamicArray
 
@@ -18,14 +19,17 @@ class Archive:
         self.archive[cell_repr] = self.insertion_index
         self.add(cell_repr, (simulator_state,))
 
-    def update_weight(self, cell_repr):
-        if cell_repr not in self.archive:
-            # Key error if archive size exceeded; ignore
-            return
-        cell_index = self.archive[cell_repr]
-        cell = self.cells[cell_index]
+    # def update_weight(self, cell_repr):
+    #     if cell_repr not in self.archive:
+    #         # Key error if archive size exceeded; ignore
+    #         return
+    #     cell_index = self.archive[cell_repr]
+    #     cell = self.cells[cell_index]
+    #     cell.increment_visits()
+    #     self.weights[cell_index] = to_weight(cell.visits)
+    def update_weight(self, cell):
         cell.increment_visits()
-        self.weights[cell_index] = to_weight(cell.visits)
+        self.weights[cell.insertion_index] = to_weight(cell.visits)
 
     def add(self, cell_repr, cell_state):
         if len(self.archive) >= self.max_size:
@@ -60,7 +64,7 @@ class RouletteWheel(Archive):
         super().__init__(max_size)
 
     def sample(self):
-        probs = [w / sum(self.weights) for w in self.weights]
+        probs = self.weights / np.sum(self.weights)
         return np.random.choice(self.cells, 1, p=probs)[0]
 
 
@@ -92,7 +96,10 @@ class Uniform(Archive):
 
 
 class Cell:
+    id_iter = itertools.count()
+
     def __init__(self, simulator_state, latest_action=None, traj_len=0, score=0.0):
+        self.insertion_index = next(self.id_iter)
         self.visits = 1
         self.done = False
         self.update(simulator_state, latest_action, traj_len, score)
@@ -102,6 +109,7 @@ class Cell:
         self.latest_action = latest_action
         self.traj_len = traj_len
         self.score = score
+        self.visits = 1
 
     def increment_visits(self):
         self.visits += 1

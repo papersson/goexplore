@@ -50,7 +50,9 @@ class GoExplore:
 
                 # Sample cell from archive
                 cell = self.archive.sample()
-                cell.increment_visits()
+                self.archive.update_weight(cell)
+
+                # cell.increment_visits()
                 n_updates, n_discoveries = self._explore_from(cell)
 
                 # Track for plotting
@@ -112,9 +114,9 @@ class GoExplore:
                     cell.update(*cell_state)
 
             # Increment visit count/update weights if cell not seen during the episode
-            if cell_representation not in cells_seen_during_iteration:
-                cells_seen_during_iteration.add(cell_representation)
-                self.archive.update_weight(cell_representation)
+            # if cell_representation not in cells_seen_during_iteration:
+            #     cells_seen_during_iteration.add(cell_representation)
+            #     self.archive.update_weight(cell_representation)
 
             # Logging and termination check
             if score > self.highscore:
