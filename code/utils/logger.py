@@ -49,6 +49,8 @@ class Logger:
 
         N = 50
         K = int(len(iter_durations) / 5000)
+        if K == 0:
+            K = 1
         fig, axs = plt.subplots(2, 3)
         fig.set_size_inches(15, 10)
 
@@ -58,8 +60,6 @@ class Logger:
         axs[0, 1].plot(scores)
         axs[0, 1].set_title('Highscore')
 
-        N = 50
-        K = int(len(iter_durations) / 5000)
         axs[0, 2].plot(np.convolve(iter_durations[::K],
                        np.ones(N)/N, mode='valid'))
         axs[0, 2].set_title('Iteration duration (s)')
