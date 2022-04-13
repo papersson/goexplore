@@ -32,6 +32,8 @@ class Archive:
         if len(self.archive) >= self.max_size:
             # Don't add more cells if archive size exceeded
             return
+        # simulator_state, actions, traj_len, score = cell_state
+        # node = Node(actions, prev)
         cell = Cell(*cell_state)
         self.archive[cell_repr] = self.insertion_index
         self.cells.append(cell)
@@ -154,6 +156,15 @@ class Cell:
     def set_done(self):
         self.done = True
 
+    def get_trajectory(self):
+        actions = []
+        node = self.prev
+        while node:
+            # print(actions)
+            actions = node.actions + actions
+            node = node.prev
+        return actions
+
     def __repr__(self):
         return f'Cell(id={self.insertion_index}, score={self.score}, traj_len={self.traj_len}, visits={self.visits}, done={self.done})'
 
@@ -163,3 +174,9 @@ class Cell:
 
     def __lt__(self, other):
         return (-self.score, self.traj_len) < (-other.score, self.traj_len)
+
+
+# class Node:
+#     def __init__(self, actions=[], prev=None):
+#         self.actions = actions
+#         self.prev = prev

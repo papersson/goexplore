@@ -67,7 +67,7 @@ class GoExplore:
         best_cell = self.archive.get_best_cell()
         print(best_cell)
         # traj = self.action_graph.get_trajectory(best_cell.latest_action)
-        traj = self.archive.get_best_trajectory()
+        traj = best_cell.get_trajectory()
 
         # Save logs
         duration = (time.time() - start)
@@ -88,7 +88,7 @@ class GoExplore:
         cells_seen_during_iteration = set()
         n_steps = 0
         actions = []
-        prev = cell
+        prev = cell.prev
         while (n_steps < MAX_FRAMES_PER_ITERATION):
             # Interact
             action = self.agent.act()
@@ -101,7 +101,7 @@ class GoExplore:
             # latest_action = self.action_graph.get(action, latest_action)
             traj_len += 1
             score += reward
-            cell_state = (simulator_state, prev, actions, traj_len, score)
+            # node = Node()
 
             # Handle cell event. Cases:
             # Cell discovered: add to archive
@@ -110,13 +110,19 @@ class GoExplore:
             cell_representation = self.downsampler.process(state)
             if cell_representation not in self.archive:
                 n_discoveries += 1
-                prev = self.archive.add(cell_representation, cell_state)
+                # prev = node.prev if node else None
+                prev = Node(actions, prev=prev)
+                cell_state = (simulator_state, prev, actions, traj_len, score)
+                self.archive.add(cell_representation, cell_state)
                 actions = []
             else:
                 cell = self.archive[cell_representation]
                 if cell.should_update(score, traj_len):
                     n_updates += 1
-                    prev = self.archive.update(cell, cell_state)
+                    prev = Node(actions, prev=prev)
+                    cell_state = (simulator_state, prev,
+                                  actions, traj_len, score)
+                    self.archive.update(cell, cell_state)
                     actions = []
 
             # Increment visit count/update weights if cell not seen during the episode
@@ -162,3 +168,9 @@ class ActionNode:
 
     def __repr__(self):
         return str(self.action)
+
+
+class Node:
+    def __init__(self, actions=[], prev=None):
+        self.actions = actions
+        self.prev = prev
