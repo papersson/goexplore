@@ -27,9 +27,6 @@ class Archive:
     #     cell = self.cells[cell_index]
     #     cell.increment_visits()
     #     self.weights[cell_index] = to_weight(cell.visits)
-    def update_weight(self, cell):
-        cell.increment_visits()
-        self.weights[cell.insertion_index] = to_weight(cell.visits)
 
     def add(self, cell_repr, cell_state):
         if len(self.archive) >= self.max_size:
@@ -40,12 +37,34 @@ class Archive:
         self.cells.append(cell)
         self.weights.append(to_weight(cell.visits))
         self.insertion_index += 1
+        return cell
+
+    def update(self, cell, cell_state):
+        cell.update(*cell_state)
+        # self.update_weight(cell)
+        # cell.increment_visits()
+        return cell
+
+    def update_weight(self, cell):
+        cell.increment_visits()
+        self.weights[cell.insertion_index] = to_weight(cell.visits)
 
     def get_best_cell(self):
         solved_cells = [cell for cell in self.cells if cell.done is True]
         best_cell = sorted(solved_cells)[
             0] if solved_cells else sorted(self.cells)[0]
         return best_cell
+
+    def get_best_trajectory(self):
+        solved_cells = [cell for cell in self.cells if cell.done is True]
+        current_cell = sorted(solved_cells)[
+            0] if solved_cells else sorted(self.cells)[0]
+        actions = []
+        while current_cell.prev:
+            print(current_cell)
+            actions = current_cell.actions + actions
+            current_cell = current_cell.prev
+        return actions
 
     def __getitem__(self, cell_repr):
         insertion_index = self.archive[cell_repr]
@@ -65,7 +84,9 @@ class RouletteWheel(Archive):
 
     def sample(self):
         probs = self.weights / np.sum(self.weights)
-        return np.random.choice(self.cells, 1, p=probs)[0]
+        cell = np.random.choice(self.cells, 1, p=probs)[0]
+        self.update_weight(cell)
+        return cell
 
 
 class StochasticAcceptance(Archive):
@@ -80,7 +101,9 @@ class StochasticAcceptance(Archive):
         p = self.weights[i] / self.w_max
         threshold = 1 - np.random.rand()
         if p > threshold:
-            return self.cells[i]
+            cell = self.cells[i]
+            self.update_weight(cell)
+            return cell
         else:
             return self.sample()
 
@@ -92,21 +115,24 @@ class Uniform(Archive):
 
     def sample(self):
         i = np.random.randint(0, len(self.weights))
-        return self.cells[i]
+        cell = self.cells[i]
+        self.update_weight(cell)
+        return cell
 
 
 class Cell:
     id_iter = itertools.count()
 
-    def __init__(self, simulator_state, latest_action=None, traj_len=0, score=0.0):
+    def __init__(self, simulator_state, prev=None, actions=None, traj_len=0, score=0.0):
         self.insertion_index = next(self.id_iter)
         self.visits = 1
         self.done = False
-        self.update(simulator_state, latest_action, traj_len, score)
+        self.update(simulator_state, prev, actions, traj_len, score)
 
-    def update(self, simulator_state, latest_action, traj_len, score):
+    def update(self, simulator_state, prev, actions, traj_len, score):
         self.simulator_state = simulator_state
-        self.latest_action = latest_action
+        self.prev = prev
+        self.actions = actions
         self.traj_len = traj_len
         self.score = score
         self.visits = 1
@@ -119,7 +145,7 @@ class Cell:
 
     def load(self, env):
         env.unwrapped.restore_state(self.simulator_state)
-        return self.latest_action, self.traj_len, self.score
+        return self.traj_len, self.score
 
     def should_update(self, score, traj_len):
         return ((score > self.score)
@@ -129,7 +155,7 @@ class Cell:
         self.done = True
 
     def __repr__(self):
-        return f'Cell(score={self.score}, traj_len={self.traj_len}, visits={self.visits}, done={self.done})'
+        return f'Cell(id={self.insertion_index}, score={self.score}, traj_len={self.traj_len}, visits={self.visits}, done={self.done})'
 
     # Make sortable
     def __eq__(self, other):

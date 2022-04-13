@@ -50,7 +50,7 @@ class GoExplore:
 
                 # Sample cell from archive
                 cell = self.archive.sample()
-                self.archive.update_weight(cell)
+                # self.archive.update_weight(cell)
 
                 # cell.increment_visits()
                 n_updates, n_discoveries = self._explore_from(cell)
@@ -66,7 +66,8 @@ class GoExplore:
         # Extract cell that reached terminal state with highest score and smallest trajectory
         best_cell = self.archive.get_best_cell()
         print(best_cell)
-        traj = self.action_graph.get_trajectory(best_cell.latest_action)
+        # traj = self.action_graph.get_trajectory(best_cell.latest_action)
+        traj = self.archive.get_best_trajectory()
 
         # Save logs
         duration = (time.time() - start)
@@ -81,11 +82,13 @@ class GoExplore:
     def _explore_from(self, cell):
         n_updates, n_discoveries = 0, 0
         # Restore to cell's simulator state and retrieve its score, trajectory, and latest action
-        latest_action, traj_len, score = cell.load(self.env)
+        traj_len, score = cell.load(self.env)
 
         # Maintain seen set to only increment visits at most once per exploration run
         cells_seen_during_iteration = set()
         n_steps = 0
+        actions = []
+        prev = cell
         while (n_steps < MAX_FRAMES_PER_ITERATION):
             # Interact
             action = self.agent.act()
@@ -94,10 +97,11 @@ class GoExplore:
             # Track cell object state in case cell needs to be updated or added
             simulator_state = self.env.unwrapped.clone_state(
                 include_rng=True)
-            latest_action = self.action_graph.get(action, latest_action)
+            actions.append(action)
+            # latest_action = self.action_graph.get(action, latest_action)
             traj_len += 1
             score += reward
-            cell_state = (simulator_state, latest_action, traj_len, score)
+            cell_state = (simulator_state, prev, actions, traj_len, score)
 
             # Handle cell event. Cases:
             # Cell discovered: add to archive
@@ -106,12 +110,14 @@ class GoExplore:
             cell_representation = self.downsampler.process(state)
             if cell_representation not in self.archive:
                 n_discoveries += 1
-                self.archive.add(cell_representation, cell_state)
+                prev = self.archive.add(cell_representation, cell_state)
+                actions = []
             else:
                 cell = self.archive[cell_representation]
                 if cell.should_update(score, traj_len):
                     n_updates += 1
-                    cell.update(*cell_state)
+                    prev = self.archive.update(cell, cell_state)
+                    actions = []
 
             # Increment visit count/update weights if cell not seen during the episode
             # if cell_representation not in cells_seen_during_iteration:
