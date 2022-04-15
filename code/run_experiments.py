@@ -19,28 +19,31 @@ def run_experiments(experiment_name, games, seeds, frames_grid, no_logging, agen
     for frames in frames_grid:
         for game in games:
             for agent in agents:
-                env = gym.make(f'{game}Deterministic-v4')
-                agent = RandomAgent(
-                    env.action_space) if agent == 'Random' else ActionRepetitionAgent(env.action_space)
+
                 for seed in seeds:
                     for selector in selectors:
-                        if selector == 'Random':
-                            selector = Uniform(max_cells)
-                        elif selector == 'Roulette':
-                            selector = RouletteWheel(max_cells)
-                        else:
-                            selector = StochasticAcceptance(max_cells)
                         for w in widths:
                             for h in heights:
                                 for d in depths:
                                     downsampler = UberReducer(w, h, d)
+                                    env = gym.make(f'{game}Deterministic-v4')
+                                    agent = RandomAgent(
+                                        env.action_space) if agent == 'Random' else ActionRepetitionAgent(env.action_space)
 
                                     params = [f'Frames{frames}', f'{game}Deterministic-v4', agent.__class__.__name__,
                                               selector.__class__.__name__, str(downsampler), f'Seed{seed}']
                                     logger = Logger(folder=str(path),
                                                     params=params) if not no_logging else None
-                                    GoExplore(agent, downsampler, selector, seed=seed,
-                                              max_frames=frames, env=env, verbose=True, logger=logger).run()
+                                    if selector == 'Random':
+                                        selector = Uniform(max_cells)
+                                    elif selector == 'Roulette':
+                                        selector = RouletteWheel(max_cells)
+                                    else:
+                                        selector = StochasticAcceptance(
+                                            max_cells)
+                                    goexplore = GoExplore(agent, downsampler, selector, seed=seed,
+                                                          max_frames=frames, env=env, verbose=True, logger=logger)
+                                    goexplore.run()
 
 
 parser = argparse.ArgumentParser(description='test')

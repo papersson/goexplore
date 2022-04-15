@@ -39,13 +39,20 @@ class GoExplore:
         cell_representation = self.downsampler.process(starting_state)
         self.archive.initialize(cell_representation, simulator_state)
 
-        scores, n_cells, n_updates_data, n_discoveries_data, iter_durations = [], [], [], [], []
-        with trange(int(self.max_frames / MAX_FRAMES_PER_ITERATION)) as t:
+        n_iterations = int(self.max_frames / MAX_FRAMES_PER_ITERATION)
+        scores, n_cells, n_updates_data, n_discoveries_data, iter_durations = [
+        ], [], np.zeros(n_iterations), np.zeros(n_iterations), []
+        dd = []
+        with trange(n_iterations) as t:
             for i in t:
                 iter_start = time.time()
                 # Progress bar
+                total = n_updates_data + n_discoveries_data
+                mean_total = total.mean() + 0.0000001
+                mean_recent = total[-10:].mean()
+                saturation = (mean_recent - mean_total) / mean_total
                 t.set_description(f'Iteration {i}')
-                t.set_postfix(num_cells=len(self.archive),
+                t.set_postfix(highscore=self.highscore, num_cells=len(self.archive), satur=saturation,
                               frames=(i+1) * MAX_FRAMES_PER_ITERATION)
 
                 # Sample cell from archive
@@ -59,9 +66,14 @@ class GoExplore:
                 iter_end = time.time()
                 scores.append(self.highscore)
                 n_cells.append(len(self.archive))
-                n_updates_data.append(n_updates)
-                n_discoveries_data.append(n_discoveries)
+                n_updates_data[i] = n_updates
+                n_discoveries_data[i] = n_discoveries
                 iter_durations.append(round(iter_end - iter_start, 3))
+
+                dd.append([cell.traj_len for cell in self.archive.cells])
+        with open('bigswarm.viz', 'wb') as f:
+            import pickle
+            pickle.dump(dd, f)
 
         # Extract cell that reached terminal state with highest score and smallest trajectory
         best_cell = self.archive.get_best_cell()
@@ -72,9 +84,9 @@ class GoExplore:
         # Save logs
         duration = (time.time() - start)
         if self.logger:
-            names = ['highscore', 'total_cells', 'duration', 'n_frames',
+            names = ['highscore', 'traj_len', 'total_cells', 'duration', 'n_frames',
                      'trajectory', 'scores', 'n_cells', 'n_updates', 'n_discoveries', 'iter_durations']
-            values = [self.highscore, len(self.archive), str(timedelta(seconds=duration)),
+            values = [self.highscore, len(traj), len(self.archive), str(timedelta(seconds=duration)),
                       self.n_frames, traj, scores, n_cells, n_updates_data, n_discoveries_data, iter_durations]
             self.logger.add(names, values)
             self.logger.save()

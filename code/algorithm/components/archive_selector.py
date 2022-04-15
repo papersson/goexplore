@@ -16,6 +16,7 @@ class Archive:
         self.cells = []
         self.weights = []
         self.max_size = max_size
+        Cell.id_iter = itertools.count()
 
     def initialize(self, cell_repr, simulator_state):
         self.archive[cell_repr] = self.insertion_index

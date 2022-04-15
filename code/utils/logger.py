@@ -20,7 +20,7 @@ class Logger:
     def save(self, experiment_name=''):
         date = datetime.datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
         filename = '_'.join(self.params[:-1])
-        filename += f'_Seed{self.params[-1]}'
+        filename += f'_{self.params[-1]}'
         if self.folder:
             filename = f'{self.folder}/{filename}'
 
@@ -78,6 +78,6 @@ class Logger:
 
         axs[1, 0].set(ylabel='Count')
 
-        fig.savefig(f'{filename}.png')
+        # fig.savefig(f'{filename}.png')
         fig.savefig(f'{filename}.svg')
-        fig.savefig(f'{filename}.eps')
+        # fig.savefig(f'{filename}.eps')
