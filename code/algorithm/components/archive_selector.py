@@ -11,8 +11,10 @@ class Archive:
     def __init__(self, max_size):
         self.archive = {}
         self.insertion_index = 0
-        self.cells = DynamicArray(SIZE, dtype=object)
-        self.weights = DynamicArray(SIZE, dtype=np.float32)
+        # self.cells = DynamicArray(SIZE, dtype=object)
+        # self.weights = DynamicArray(SIZE, dtype=np.float32)
+        self.cells = []
+        self.weights = []
         self.max_size = max_size
 
     def initialize(self, cell_repr, simulator_state):
