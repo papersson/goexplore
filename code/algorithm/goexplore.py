@@ -70,24 +70,25 @@ class GoExplore:
                 n_discoveries_data[i] = n_discoveries
                 iter_durations.append(round(iter_end - iter_start, 3))
 
-                dd.append([cell.traj_len for cell in self.archive.cells])
-        with open('bigswarm.viz', 'wb') as f:
-            import pickle
-            pickle.dump(dd, f)
+        #         dd.append([cell.traj_len for cell in self.archive.cells])
+        # with open('bigswarm.viz', 'wb') as f:
+        #     import pickle
+        #     pickle.dump(dd, f)
 
         # Extract cell that reached terminal state with highest score and smallest trajectory
         best_cell = self.archive.get_best_cell()
         print(best_cell)
         # traj = self.action_graph.get_trajectory(best_cell.latest_action)
         traj = best_cell.get_trajectory()
+        swarm = [cell.traj_len for cell in self.archive.cells]
 
         # Save logs
         duration = (time.time() - start)
         if self.logger:
             names = ['highscore', 'traj_len', 'total_cells', 'duration', 'n_frames',
-                     'trajectory', 'scores', 'n_cells', 'n_updates', 'n_discoveries', 'iter_durations']
+                     'trajectory', 'scores', 'n_cells', 'n_updates', 'n_discoveries', 'iter_durations', 'swarm']
             values = [self.highscore, len(traj), len(self.archive), str(timedelta(seconds=duration)),
-                      self.n_frames, traj, scores, n_cells, n_updates_data, n_discoveries_data, iter_durations]
+                      self.n_frames, traj, scores, n_cells, n_updates_data, n_discoveries_data, iter_durations, swarm]
             self.logger.add(names, values)
             self.logger.save()
 

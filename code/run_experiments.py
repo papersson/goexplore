@@ -30,10 +30,6 @@ def run_experiments(experiment_name, games, seeds, frames_grid, no_logging, agen
                                     agent = RandomAgent(
                                         env.action_space) if agent == 'Random' else ActionRepetitionAgent(env.action_space)
 
-                                    params = [f'Frames{frames}', f'{game}Deterministic-v4', agent.__class__.__name__,
-                                              selector.__class__.__name__, str(downsampler), f'Seed{seed}']
-                                    logger = Logger(folder=str(path),
-                                                    params=params) if not no_logging else None
                                     if selector == 'Random':
                                         selector = Uniform(max_cells)
                                     elif selector == 'Roulette':
@@ -41,6 +37,11 @@ def run_experiments(experiment_name, games, seeds, frames_grid, no_logging, agen
                                     else:
                                         selector = StochasticAcceptance(
                                             max_cells)
+
+                                    params = [f'Frames{frames}', f'{game}Deterministic-v4', agent.__class__.__name__,
+                                              selector.__class__.__name__, str(downsampler), f'Seed{seed}']
+                                    logger = Logger(folder=str(path),
+                                                    params=params) if not no_logging else None
                                     goexplore = GoExplore(agent, downsampler, selector, seed=seed,
                                                           max_frames=frames, env=env, verbose=True, logger=logger)
                                     goexplore.run()
