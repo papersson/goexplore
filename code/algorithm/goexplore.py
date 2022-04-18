@@ -114,6 +114,7 @@ class GoExplore:
             # latest_action = self.action_graph.get(action, latest_action)
             traj_len += 1
             score += reward
+
             # node = Node()
 
             # Handle cell event. Cases:
@@ -121,6 +122,7 @@ class GoExplore:
             # Cell is better than archived cell: update cell in archive
             # Cell is not discovered or better: do nothing
             cell_representation = self.downsampler.process(state)
+
             if cell_representation not in self.archive:
                 n_discoveries += 1
                 # prev = node.prev if node else None
@@ -137,6 +139,7 @@ class GoExplore:
                                   actions, traj_len, score)
                     self.archive.update(cell, cell_state)
                     actions = []
+            self.archive.increment_visits(cell_representation)
 
             # Increment visit count/update weights if cell not seen during the episode
             # if cell_representation not in cells_seen_during_iteration:
