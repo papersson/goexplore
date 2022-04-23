@@ -19,7 +19,6 @@ def run_experiments(experiment_name, games, seeds, frames_grid, no_logging, agen
     for frames in frames_grid:
         for game in games:
             for agent in agents:
-
                 for seed in seeds:
                     for selector in selectors:
                         for w in widths:
@@ -31,18 +30,21 @@ def run_experiments(experiment_name, games, seeds, frames_grid, no_logging, agen
                                         env.action_space) if agent == 'Random' else ActionRepetitionAgent(env.action_space)
 
                                     if selector == 'Random':
-                                        selector = Uniform(max_cells)
+                                        archive = Uniform(max_cells)
                                     elif selector == 'Roulette':
-                                        selector = RouletteWheel(max_cells)
+                                        archive = RouletteWheel(max_cells)
                                     else:
-                                        selector = StochasticAcceptance(
+                                        archive = StochasticAcceptance(
                                             max_cells)
 
                                     params = [f'Frames{frames}', f'{game}Deterministic-v4', agent.__class__.__name__,
-                                              selector.__class__.__name__, str(downsampler), f'Seed{seed}']
+                                              archive.__class__.__name__, str(downsampler), f'Seed{seed}']
                                     logger = Logger(folder=str(path),
                                                     params=params) if not no_logging else None
-                                    goexplore = GoExplore(agent, downsampler, selector, seed=seed,
+                                    prettyparams = f'Experiment(frames={frames}, game={game}, agent={agent.__class__.__name__}, selector={archive.__class__.__name__}, downsampler={str(downsampler)}, seed={seed})'
+                                    print(
+                                        f"Starting experiment: {prettyparams}")
+                                    goexplore = GoExplore(agent, downsampler, archive, seed=seed,
                                                           max_frames=frames, env=env, verbose=True, logger=logger)
                                     goexplore.run()
 

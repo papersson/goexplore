@@ -22,7 +22,6 @@ class Logger:
     def save(self, experiment_name=''):
         date = datetime.datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
         filename = '_'.join(self.params[:-1])
-        print(filename)
         filename += f'_{self.params[-1]}'
         if self.folder:
             filename = f'{self.folder}/{filename}'
@@ -135,11 +134,12 @@ class Logger:
         ax_celldisc.set(ylabel='Count')
 
         # ax = plt.subplot(3, 1, 1)
-        ax_swarm = self.plot_swarm(data.swarm)
+        if data.n_cells[-1] < 5000:
+            ax_swarm = self.plot_swarm(data.swarm)
         return fig
 
     def plot_swarm(self, swarm):
-        g = sns.swarmplot(y=swarm, orient='v')
+        g = sns.swarmplot(y=swarm, orient='v', size=1)
         sns.despine(bottom=True, left=True)
         g.set(ylabel=None)
         g.tick_params(left=False)

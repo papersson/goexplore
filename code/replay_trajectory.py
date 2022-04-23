@@ -28,7 +28,11 @@ def replay(actions_taken, env):
 
 
 def read(file):
-    env = file.split('_')[2]
+    print(file.split('_'))
+    for s in file.split('_'):
+        if 'Deterministic' in s:
+            env = s
+    # env = file.split('_')[2]
     with open(file, 'rb') as f:
         actions = pickle.load(f)
     return env, actions
