@@ -70,10 +70,10 @@ class GoExplore:
                 n_discoveries_data[i] = n_discoveries
                 iter_durations.append(round(iter_end - iter_start, 3))
 
-        #         dd.append([cell.traj_len for cell in self.archive.cells])
-        # with open('bigswarm.viz', 'wb') as f:
-        #     import pickle
-        #     pickle.dump(dd, f)
+                dd.append([cell.traj_len for cell in self.archive.cells])
+        with open('mediumswarm.viz', 'wb') as f:
+            import pickle
+            pickle.dump(dd, f)
 
         # Extract cell that reached terminal state with highest score and smallest trajectory
         best_cell = self.archive.get_best_cell()
