@@ -122,6 +122,20 @@ class GoExplore:
             # Cell is better than archived cell: update cell in archive
             # Cell is not discovered or better: do nothing
             cell_representation = self.downsampler.process(state)
+            print(state.shape)
+            print(len(cell_representation))
+            cell_img = np.array(cell_representation).reshape((8, 11))
+            from PIL import Image
+            # im_cell = Image.fromarray(cell_img).convert(
+            #     'RGB').resize((210, 160), Image.ANTIALIAS)
+            # im_cell = Image.fromarray(cell_img)
+            # import cv2
+            # im_cell = cv2.resize(cell_img, (210, 160),
+            #  interpolation=cv2.INTER_CUBIC)
+            im_cell = Image.fromarray(cell_img).convert('RGB')
+            im_state = Image.fromarray(state)
+            im_cell.save('../plot/cell.png')
+            im_state.save('../plot/state.png')
 
             if cell_representation not in self.archive:
                 n_discoveries += 1
