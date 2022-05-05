@@ -1,5 +1,3 @@
-import random
-
 import numpy as np
 
 
@@ -8,7 +6,6 @@ class RandomAgent:
         self.action_space = action_space
 
     def act(self):
-        # return random.choice(self.action_space)
         return self.action_space.sample()
 
     def __repr__(self):

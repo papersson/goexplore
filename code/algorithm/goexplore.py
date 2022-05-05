@@ -18,24 +18,25 @@ class GoExplore:
     Parameters
     ----------
     agent : Agent
-        This is some text.
+        Agent that makes decisions during exploration.
 
-
-    downsampler : Downsampler
-        This is some text.
+    cell_params : CellParams
+        Tuple containing the downsampling parameters w, h, and d.
 
     archive : Archive
-        This is another text
+        Archive with specified selection strategy (random, stochastic acceptance, or roulette)
 
-    env : ALE.kljaflkjf
-
+    env : Env
+        OpenAI learning environment.
 
     seed : int
-        This is some text.
+        Seed to control randomness.
 
     max_frames : int
+        Number of maximum frames, used as termination criteria.
 
     logger : Logger
+        Logging utility that saves hyperparameter settings, plotting data, and trajectory.
 
     Notes
     -----
@@ -73,6 +74,8 @@ class GoExplore:
         self.highscore, self.n_frames = 0, 0
 
     def _downsample(self, img):
+        """ Downsample by converting to grayscale, downscaling, and reducing color depth.
+        """
         width, height, depth = self.cell_params
 
         img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
@@ -86,6 +89,7 @@ class GoExplore:
         return tuple(img.flatten())
 
     def run(self):
+        """ Run GoExplore for <self.max_frames> frames."""
         start = time.time()
 
         # Initialize archive with starting cell.
@@ -138,6 +142,7 @@ class GoExplore:
             self.logger.save()
 
     def _explore_from(self, cell):
+        """ Explore from cell for 100 steps. """
         # Track updates and discoveries for logging.
         n_updates, n_discoveries = 0, 0
 
