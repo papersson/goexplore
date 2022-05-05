@@ -6,7 +6,7 @@ import json
 import pickle
 
 Data = namedtuple(
-    'Data', 'scores n_cells n_updates n_discoveries iter_durations swarm')
+    'Data', 'scores n_cells n_updates n_discoveries iter_durations')
 
 
 class Logger:

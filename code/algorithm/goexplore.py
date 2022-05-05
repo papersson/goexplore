@@ -143,9 +143,9 @@ class GoExplore:
         duration = (time.time() - start)
         if self.logger:
             names = ['highscore', 'traj_len', 'total_cells', 'duration', 'n_frames',
-                     'trajectory', 'scores', 'n_cells', 'n_updates', 'n_discoveries', 'iter_durations', 'swarm']
+                     'trajectory', 'scores', 'n_cells', 'n_updates', 'n_discoveries', 'iter_durations']
             values = [self.highscore, len(traj), len(self.archive), str(timedelta(seconds=duration)),
-                      self.n_frames, traj, scores_data, n_cells_data, n_updates_data, n_discoveries_data, iter_durations_data, swarm]
+                      self.n_frames, traj, scores_data, n_cells_data, n_updates_data, n_discoveries_data, iter_durations_data]
             self.logger.add(names, values)
             self.logger.save()
 
@@ -162,7 +162,7 @@ class GoExplore:
         for _ in range(N_EXPLORATION_STEPS):
             # Interact.
             action = self.agent.act()
-            state, reward, is_terminal, _ = self.env.step(action)
+            state, reward, _, _ = self.env.step(action)
 
             # Track cell state in case cell needs to be updated or added.
             simulator_state = self.env.unwrapped.clone_state(include_rng=True)
