@@ -42,8 +42,12 @@ class GoExplore:
     env : ALE.kljaflkjf
 
 
-    agent : Agent
+    seed : int
         This is some text.
+
+    max_frames : int
+
+    logger : Logger
 
     Notes
     -----
@@ -69,7 +73,6 @@ class GoExplore:
         self.seed = seed
         self.env = env
         self.agent = agent
-        # self.downsampler = self._downsampler(cell_params)
         self.cell_params = cell_params
         self.archive = archive
         self.max_frames = max_frames
@@ -80,7 +83,6 @@ class GoExplore:
 
         # Track during run for plotting.
         self.highscore, self.n_frames = 0, 0
-        print(self.__doc__)
 
     def _downsample(self, img):
         width, height, depth = self.cell_params
@@ -101,8 +103,8 @@ class GoExplore:
         # Initialize archive with starting cell.
         starting_state = self.env.reset()
         simulator_state = self.env.unwrapped.clone_state(include_rng=True)
-        # cell_representation = self.downsampler.process(starting_state)
         cell_representation = self._downsample(starting_state)
+        # self.archive.add(cell_representation, simulator_state)
         self.archive.initialize(cell_representation, simulator_state)
 
         # Track data
@@ -112,7 +114,7 @@ class GoExplore:
         n_discoveries_data = []
         iter_durations_data = []
 
-        # Run GoExplore for self.max_frames frames
+        # Run GoExplore for <self.max_frames> frames
         n_iterations = int(self.max_frames / N_EXPLORATION_STEPS)
         with trange(n_iterations) as t:
             for i in t:
@@ -135,9 +137,7 @@ class GoExplore:
                 iter_durations_data.append(round(iter_end - iter_start, 3))
 
         # Extract cell that reached terminal state with highest score and smallest trajectory
-        best_cell = self.archive.get_best_cell()
-        traj = best_cell.get_trajectory()
-        swarm = [cell.traj_len for cell in self.archive.cells]
+        traj = self.archive.get_best_trajectory()
 
         # Save logging data.
         duration = (time.time() - start)
@@ -172,7 +172,6 @@ class GoExplore:
 
             # Add cell if it is not in the archive. Update the archive if
             # current cell is better.
-            # cell_representation = self.downsampler.process(state)
             cell_representation = self._downsample(state)
             if cell_representation not in self.archive:
                 prev = Node(actions, prev=prev)
@@ -203,6 +202,12 @@ class GoExplore:
 
 
 class Node:
+    """ GoExplore game tree node.
+
+    A node contains a reference to its predecessor and an array 
+    of actions connecting the nodes.
+    """
+
     def __init__(self, actions=[], prev=None):
         self.actions = actions
         self.prev = prev
