@@ -2,7 +2,6 @@ import argparse
 import datetime
 from pathlib import Path
 from utils.logger import Logger
-from algorithm.components.downsampler import CoarseBinarizer, UberReducer
 from algorithm.components.archive_selector import RouletteWheel, StochasticAcceptance, Uniform
 from algorithm.components.agent import ActionRepetitionAgent, RandomAgent
 from algorithm.goexplore import GoExplore
@@ -13,7 +12,17 @@ CellParams = namedtuple('CellParams', 'width height depth')
 
 
 def run_experiments(experiment_name, games, seeds, frames_grid, no_logging, agents, selectors, widths, heights, depths, max_cells):
+    """ Run series of experiments.
+
+    Example
+    -------
+    Run 20000 frames on Pong using stochastic acceptance selection:
+    python run_experiments.py --games Pong --frames 20000 --selectors StochasticAcceptance
+
+    """
+
     # Create folder with format {date_experimentname} if we want to save logs/results
+    Path('/experiments').mkdir(parents=True, exist_ok=True)
     if not no_logging:
         date = datetime.datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
         path = Path(f'experiments/{date}_{experiment_name}')
@@ -27,7 +36,6 @@ def run_experiments(experiment_name, games, seeds, frames_grid, no_logging, agen
                         for w in widths:
                             for h in heights:
                                 for d in depths:
-                                    # downsampler = UberReducer(w, h, d)
                                     cell_params = CellParams(w, h, d)
                                     env = gym.make(f'{game}Deterministic-v4')
                                     agent = RandomAgent(
