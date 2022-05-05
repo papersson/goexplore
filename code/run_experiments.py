@@ -7,6 +7,9 @@ from algorithm.components.archive_selector import RouletteWheel, StochasticAccep
 from algorithm.components.agent import ActionRepetitionAgent, RandomAgent
 from algorithm.goexplore import GoExplore
 import gym
+from collections import namedtuple
+
+CellParams = namedtuple('CellParams', 'width height depth')
 
 
 def run_experiments(experiment_name, games, seeds, frames_grid, no_logging, agents, selectors, widths, heights, depths, max_cells):
@@ -24,7 +27,8 @@ def run_experiments(experiment_name, games, seeds, frames_grid, no_logging, agen
                         for w in widths:
                             for h in heights:
                                 for d in depths:
-                                    downsampler = UberReducer(w, h, d)
+                                    # downsampler = UberReducer(w, h, d)
+                                    cell_params = CellParams(w, h, d)
                                     env = gym.make(f'{game}Deterministic-v4')
                                     agent = RandomAgent(
                                         env.action_space) if agent == 'Random' else ActionRepetitionAgent(env.action_space)
@@ -38,14 +42,14 @@ def run_experiments(experiment_name, games, seeds, frames_grid, no_logging, agen
                                             max_cells)
 
                                     params = [f'Frames{frames}', f'{game}Deterministic-v4', agent.__class__.__name__,
-                                              archive.__class__.__name__, str(downsampler), f'Seed{seed}']
+                                              archive.__class__.__name__, str(cell_params), f'Seed{seed}']
                                     logger = Logger(folder=str(path),
                                                     params=params) if not no_logging else None
-                                    prettyparams = f'Experiment(frames={frames}, game={game}, agent={agent.__class__.__name__}, selector={archive.__class__.__name__}, downsampler={str(downsampler)}, seed={seed})'
+                                    prettyparams = f'Experiment(frames={frames}, game={game}, agent={agent.__class__.__name__}, selector={archive.__class__.__name__}, downsampler={str(cell_params)}, seed={seed})'
                                     print(
                                         f"Starting experiment: {prettyparams}")
-                                    goexplore = GoExplore(agent, downsampler, archive, seed=seed,
-                                                          max_frames=frames, env=env, verbose=True, logger=logger)
+                                    goexplore = GoExplore(agent, cell_params, archive, seed=seed,
+                                                          max_frames=frames, env=env, logger=logger)
                                     goexplore.run()
 
 
