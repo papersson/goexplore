@@ -12,3 +12,4 @@ src/run_overnight.py
 *.viz
 seeds
 archiveviz/
+.vscode
