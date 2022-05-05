@@ -1,15 +1,3 @@
-""" Example docstring.
-
-Some text with some more bla bla bla. What is this now? Huh?!
-
-Attributes
------------
-N_EXPLORATION_STEPS : int
-    Number of steps per exploration run.
-
-"""
-
-
 from configparser import Interpolation
 from tqdm import trange
 import numpy as np
