@@ -1,9 +1,9 @@
 import argparse
 import datetime
 from pathlib import Path
-from utils.logger import Logger
-from algorithm.components.archive_selector import RouletteWheel, StochasticAcceptance, Uniform
-from algorithm.components.agent import ActionRepetitionAgent, RandomAgent
+from algorithm.logger import Logger
+from algorithm.archive import RouletteWheel, StochasticAcceptance, Uniform
+from algorithm.agent import ActionRepetitionAgent, RandomAgent
 from algorithm.goexplore import GoExplore
 import gym
 from collections import namedtuple

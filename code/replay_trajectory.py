@@ -1,6 +1,5 @@
 from gym.envs.classic_control import rendering
 import gym
-import json
 import argparse
 import numpy as np
 import pickle
@@ -9,7 +8,6 @@ p = argparse.ArgumentParser()
 default_demo = 'demo.trajectory'
 p.add_argument('--path', type=str, default=default_demo)
 args = p.parse_args()
-print(args.path)
 
 
 def replay(actions_taken, env):
