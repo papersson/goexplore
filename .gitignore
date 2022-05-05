@@ -13,3 +13,5 @@ src/run_overnight.py
 seeds
 archiveviz/
 .vscode
+archived
+plot
