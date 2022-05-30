@@ -16,11 +16,11 @@ pip install -r requirements.txt
 To run 10000 frames on Pong, run the following command:
 
 ```console
-python run-experiments.py --games Pong --frames 10000
+python code/run_experiments.py --games Pong --frames 10000
 ```
 
 Run the help command for more details:
 
 ```console
-python run-experiments.py -h
+python code/run_experiments.py -h
 ```
