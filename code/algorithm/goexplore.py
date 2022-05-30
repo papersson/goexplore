@@ -96,7 +96,6 @@ class GoExplore:
         starting_state = self.env.reset()
         simulator_state = self.env.unwrapped.clone_state(include_rng=True)
         cell_representation = self._downsample(starting_state)
-        # self.archive.add(cell_representation, simulator_state)
         self.archive.initialize(cell_representation, simulator_state)
 
         # Track data

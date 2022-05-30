@@ -21,7 +21,6 @@ def run_experiments(experiment_name, games, seeds, frames_grid, no_logging, agen
 
     """
 
-    # Create folder with format {date_experimentname} if we want to save logs/results
     Path('experiments').mkdir(parents=True, exist_ok=True)
     if not no_logging:
         date = datetime.datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
