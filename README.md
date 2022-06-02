@@ -2,7 +2,7 @@
 
 ## Installing dependencies
 
-Tested using Python version 3.8.3.
+Tested using Python version 3.8.3 on Ubuntu 20.04.
 
 First clone the repository, then run
 
